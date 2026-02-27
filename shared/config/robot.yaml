@@ -1,0 +1,17 @@
+robot:
+  name: ai_robot
+power:
+  rails:
+    vbat_3s: {}
+    v12: {}
+    v5_main: {}
+    v5_sens: {}
+    v6_servo: {}
+    v3v3_logic: {}
+links:
+  uart_jetson_esp32:
+    baud: 921600
+    port_hint: "/dev/ttyTHS*"
+i2c:
+  master: "esp32"
+  tca9548a_addr: 0x70
