@@ -1,0 +1,267 @@
+#IN_AUDIO = ICS43434 I2C
+
+
+arecord -D hw:1,0 -c 2 -r 48000 -f S32_LE -d 5 stereo.wav
+sox stereo.wav -n remix 1 stat
+sox stereo.wav -n remix 2 stat
+
+sox stereo.wav -n stat
+
+arecord -D hw:1,0 -c 2 -r 48000 -f S32_LE -d 10 stereo.wav
+sox stereo.wav mono.wav remix 1,2
+sox mono.wav -r 16000 mono16k.wav
+sox mono16k.wav mono16k_loud.wav gain -n -3
+
+#convert to 16000
+sox stereo.wav -c 1 mono16k.wav remix 2 rate -v 16000 dither -s
+
+#Up Sound
+sox stereo.wav -c 1 mono.wav remix 2
+sox mono.wav mono_loud.wav gain -n -3
+
+#Check channels
+sox stereo.wav -n remix 1 stat 2>&1 | grep -E "RMS|Maximum"
+sox stereo.wav -n remix 2 stat 2>&1 | grep -E "RMS|Maximum"
+
+
+
+#Settings SET
+sudo amixer -c 1 cset name='I2S2 codec master mode' 'cbs-cfs'
+sudo amixer -c 1 cset name='I2S2 codec frame mode' 'i2s'
+sudo amixer -c 1 cset name='I2S2 FSYNC Width' 31
+sudo amixer -c 1 cset name='I2S2 BCLK Ratio' 1
+sudo amixer -c 1 cset name='I2S2 Capture Audio Bit Format' '32'
+sudo amixer -c 1 cset name='I2S2 Client Bit Format' '32'
+sudo amixer -c 1 cset name='I2S2 Capture Audio Channels' 2
+sudo amixer -c 1 cset name='I2S2 Client Channels' 2
+sudo amixer -c 1 cset name='I2S2 Sample Rate' 48000
+sudo amixer -c 1 cset name='ADMAIF1 Mux' 'I2S2'
+sudo amixer -c 1 cset name='I2S2 Mux' 'None'
+
+
+#Settings SET
+amixer -c 1 cget name='I2S2 codec master mode'
+amixer -c 1 cget name='I2S2 codec frame mode'
+amixer -c 1 cget name='I2S2 Sample Rate'
+amixer -c 1 cget name='I2S2 Capture Audio Bit Format'
+amixer -c 1 cget name='I2S2 Client Bit Format'
+amixer -c 1 cget name='I2S2 Capture Audio Channels'
+amixer -c 1 cget name='I2S2 Client Channels'
+amixer -c 1 cget name='ADMAIF1 Mux'
+amixer -c 1 cget name='I2S2 Mux'
+amixer -c 1 cget name='I2S2 FSYNC Width'
+amixer -c 1 cget name='I2S2 BCLK Ratio'
+
+numid=1224,iface=MIXER,name='I2S2 codec master mode'
+  ; type=ENUMERATED,access=rw------,values=1,items=3
+  ; Item #0 'None'
+  ; Item #1 'cbm-cfm'
+  ; Item #2 'cbs-cfs'
+  : values=2
+numid=1223,iface=MIXER,name='I2S2 codec frame mode'
+  ; type=ENUMERATED,access=rw------,values=1,items=6
+  ; Item #0 'None'
+  ; Item #1 'i2s'
+  ; Item #2 'right-j'
+  ; Item #3 'left-j'
+  ; Item #4 'dsp-a'
+  ; Item #5 'dsp-b'
+  : values=1
+numid=162,iface=MIXER,name='I2S2 Sample Rate'
+  ; type=INTEGER,access=rw------,values=1,min=0,max=192000,step=0
+  : values=48000
+numid=164,iface=MIXER,name='I2S2 Capture Audio Bit Format'
+  ; type=ENUMERATED,access=rw------,values=1,items=3
+  ; Item #0 'None'
+  ; Item #1 '16'
+  ; Item #2 '32'
+  : values=2
+numid=165,iface=MIXER,name='I2S2 Client Bit Format'
+  ; type=ENUMERATED,access=rw------,values=1,items=3
+  ; Item #0 'None'
+  ; Item #1 '16'
+  ; Item #2 '32'
+  : values=2
+numid=167,iface=MIXER,name='I2S2 Capture Audio Channels'
+  ; type=INTEGER,access=rw------,values=1,min=0,max=16,step=0
+  : values=2
+numid=168,iface=MIXER,name='I2S2 Client Channels'
+  ; type=INTEGER,access=rw------,values=1,min=0,max=16,step=0
+  : values=2
+numid=1094,iface=MIXER,name='ADMAIF1 Mux'
+  ; type=ENUMERATED,access=rw------,values=1,items=81
+  ; Item #0 'None'
+  ; Item #1 'ADMAIF1'
+  ; Item #2 'ADMAIF2'
+  ; Item #3 'ADMAIF3'
+  ; Item #4 'ADMAIF4'
+  ; Item #5 'ADMAIF5'
+  ; Item #6 'ADMAIF6'
+  ; Item #7 'ADMAIF7'
+  ; Item #8 'ADMAIF8'
+  ; Item #9 'ADMAIF9'
+  ; Item #10 'ADMAIF10'
+  ; Item #11 'ADMAIF11'
+  ; Item #12 'ADMAIF12'
+  ; Item #13 'ADMAIF13'
+  ; Item #14 'ADMAIF14'
+  ; Item #15 'ADMAIF15'
+  ; Item #16 'ADMAIF16'
+  ; Item #17 'I2S1'
+  ; Item #18 'I2S2'
+  ; Item #19 'I2S3'
+  ; Item #20 'I2S4'
+  ; Item #21 'I2S5'
+  ; Item #22 'I2S6'
+  ; Item #23 'SFC1'
+  ; Item #24 'SFC2'
+  ; Item #25 'SFC3'
+  ; Item #26 'SFC4'
+  ; Item #27 'MIXER1 TX1'
+  ; Item #28 'MIXER1 TX2'
+  ; Item #29 'MIXER1 TX3'
+  ; Item #30 'MIXER1 TX4'
+  ; Item #31 'MIXER1 TX5'
+  ; Item #32 'AMX1'
+  ; Item #33 'AMX2'
+  ; Item #34 'AMX3'
+  ; Item #35 'AMX4'
+  ; Item #36 'ARAD1'
+  ; Item #37 'AFC1'
+  ; Item #38 'AFC2'
+  ; Item #39 'AFC3'
+  ; Item #40 'AFC4'
+  ; Item #41 'AFC5'
+  ; Item #42 'AFC6'
+  ; Item #43 'OPE1'
+  ; Item #44 'SPKPROT1'
+  ; Item #45 'MVC1'
+  ; Item #46 'MVC2'
+  ; Item #47 'IQC1-1'
+  ; Item #48 'IQC1-2'
+  ; Item #49 'IQC2-1'
+  ; Item #50 'IQC2-2'
+  ; Item #51 'DMIC1'
+  ; Item #52 'DMIC2'
+  ; Item #53 'DMIC3'
+  ; Item #54 'DMIC4'
+  ; Item #55 'ADX1 TX1'
+  ; Item #56 'ADX1 TX2'
+  ; Item #57 'ADX1 TX3'
+  ; Item #58 'ADX1 TX4'
+  ; Item #59 'ADX2 TX1'
+  ; Item #60 'ADX2 TX2'
+  ; Item #61 'ADX2 TX3'
+  ; Item #62 'ADX2 TX4'
+  ; Item #63 'ADX3 TX1'
+  ; Item #64 'ADX3 TX2'
+  ; Item #65 'ADX3 TX3'
+  ; Item #66 'ADX3 TX4'
+  ; Item #67 'ADX4 TX1'
+  ; Item #68 'ADX4 TX2'
+  ; Item #69 'ADX4 TX3'
+  ; Item #70 'ADX4 TX4'
+  ; Item #71 'ADMAIF17'
+  ; Item #72 'ADMAIF18'
+  ; Item #73 'ADMAIF19'
+  ; Item #74 'ADMAIF20'
+  ; Item #75 'ASRC1 TX1'
+  ; Item #76 'ASRC1 TX2'
+  ; Item #77 'ASRC1 TX3'
+  ; Item #78 'ASRC1 TX4'
+  ; Item #79 'ASRC1 TX5'
+  ; Item #80 'ASRC1 TX6'
+  : values=18
+numid=1105,iface=MIXER,name='I2S2 Mux'
+  ; type=ENUMERATED,access=rw------,values=1,items=81
+  ; Item #0 'None'
+  ; Item #1 'ADMAIF1'
+  ; Item #2 'ADMAIF2'
+  ; Item #3 'ADMAIF3'
+  ; Item #4 'ADMAIF4'
+  ; Item #5 'ADMAIF5'
+  ; Item #6 'ADMAIF6'
+  ; Item #7 'ADMAIF7'
+  ; Item #8 'ADMAIF8'
+  ; Item #9 'ADMAIF9'
+  ; Item #10 'ADMAIF10'
+  ; Item #11 'ADMAIF11'
+  ; Item #12 'ADMAIF12'
+  ; Item #13 'ADMAIF13'
+  ; Item #14 'ADMAIF14'
+  ; Item #15 'ADMAIF15'
+  ; Item #16 'ADMAIF16'
+  ; Item #17 'I2S1'
+  ; Item #18 'I2S2'
+  ; Item #19 'I2S3'
+  ; Item #20 'I2S4'
+  ; Item #21 'I2S5'
+  ; Item #22 'I2S6'
+  ; Item #23 'SFC1'
+  ; Item #24 'SFC2'
+  ; Item #25 'SFC3'
+  ; Item #26 'SFC4'
+  ; Item #27 'MIXER1 TX1'
+  ; Item #28 'MIXER1 TX2'
+  ; Item #29 'MIXER1 TX3'
+  ; Item #30 'MIXER1 TX4'
+  ; Item #31 'MIXER1 TX5'
+  ; Item #32 'AMX1'
+  ; Item #33 'AMX2'
+  ; Item #34 'AMX3'
+  ; Item #35 'AMX4'
+  ; Item #36 'ARAD1'
+  ; Item #37 'AFC1'
+  ; Item #38 'AFC2'
+  ; Item #39 'AFC3'
+  ; Item #40 'AFC4'
+  ; Item #41 'AFC5'
+  ; Item #42 'AFC6'
+  ; Item #43 'OPE1'
+  ; Item #44 'SPKPROT1'
+  ; Item #45 'MVC1'
+  ; Item #46 'MVC2'
+  ; Item #47 'IQC1-1'
+  ; Item #48 'IQC1-2'
+  ; Item #49 'IQC2-1'
+  ; Item #50 'IQC2-2'
+  ; Item #51 'DMIC1'
+  ; Item #52 'DMIC2'
+  ; Item #53 'DMIC3'
+  ; Item #54 'DMIC4'
+  ; Item #55 'ADX1 TX1'
+  ; Item #56 'ADX1 TX2'
+  ; Item #57 'ADX1 TX3'
+  ; Item #58 'ADX1 TX4'
+  ; Item #59 'ADX2 TX1'
+  ; Item #60 'ADX2 TX2'
+  ; Item #61 'ADX2 TX3'
+  ; Item #62 'ADX2 TX4'
+  ; Item #63 'ADX3 TX1'
+  ; Item #64 'ADX3 TX2'
+  ; Item #65 'ADX3 TX3'
+  ; Item #66 'ADX3 TX4'
+  ; Item #67 'ADX4 TX1'
+  ; Item #68 'ADX4 TX2'
+  ; Item #69 'ADX4 TX3'
+  ; Item #70 'ADX4 TX4'
+  ; Item #71 'ADMAIF17'
+  ; Item #72 'ADMAIF18'
+  ; Item #73 'ADMAIF19'
+  ; Item #74 'ADMAIF20'
+  ; Item #75 'ASRC1 TX1'
+  ; Item #76 'ASRC1 TX2'
+  ; Item #77 'ASRC1 TX3'
+  ; Item #78 'ASRC1 TX4'
+  ; Item #79 'ASRC1 TX5'
+  ; Item #80 'ASRC1 TX6'
+  : values=0
+numid=170,iface=MIXER,name='I2S2 FSYNC Width'
+  ; type=INTEGER,access=rw------,values=1,min=0,max=255,step=0
+  : values=31
+numid=176,iface=MIXER,name='I2S2 BCLK Ratio'
+  ; type=INTEGER,access=rw------,values=1,min=0,max=2147483647,step=0
+  : values=1
+
+
+
