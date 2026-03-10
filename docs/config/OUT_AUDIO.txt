@@ -1,0 +1,7 @@
+#OUT_AUDIO = MAX98357A x2, 3W 4Om x2
+
+sudo amixer -c 1 cset name='I2S2 Mux' 'MVC1'
+sudo amixer -c 1 cset name='MVC1 Mux' 'ADMAIF1'
+
+amixer -c 1 sset 'MVC1' 13000
+
