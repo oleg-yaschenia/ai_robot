@@ -1,0 +1,15 @@
+package.xml
+setup.cfg
+setup.py
+../../build/robot_audio/robot_audio.egg-info/PKG-INFO
+../../build/robot_audio/robot_audio.egg-info/SOURCES.txt
+../../build/robot_audio/robot_audio.egg-info/dependency_links.txt
+../../build/robot_audio/robot_audio.egg-info/entry_points.txt
+../../build/robot_audio/robot_audio.egg-info/requires.txt
+../../build/robot_audio/robot_audio.egg-info/top_level.txt
+../../build/robot_audio/robot_audio.egg-info/zip-safe
+resource/robot_audio
+robot_audio/__init__.py
+test/test_copyright.py
+test/test_flake8.py
+test/test_pep257.py
