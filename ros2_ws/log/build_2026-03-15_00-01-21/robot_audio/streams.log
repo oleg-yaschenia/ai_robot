@@ -1,0 +1,33 @@
+[2.050s] Invoking command in '/home/warxen/ai_robot/ros2_ws/src/robot_audio': NX_CONNECTION=192.168.1.126 12269 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_audio/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_audio/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_audio build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_audio/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_audio/install.log --single-version-externally-managed install_data
+[2.470s] running egg_info
+[2.471s] creating ../../build/robot_audio/robot_audio.egg-info
+[2.471s] writing ../../build/robot_audio/robot_audio.egg-info/PKG-INFO
+[2.472s] writing dependency_links to ../../build/robot_audio/robot_audio.egg-info/dependency_links.txt
+[2.472s] writing entry points to ../../build/robot_audio/robot_audio.egg-info/entry_points.txt
+[2.472s] writing requirements to ../../build/robot_audio/robot_audio.egg-info/requires.txt
+[2.472s] writing top-level names to ../../build/robot_audio/robot_audio.egg-info/top_level.txt
+[2.473s] writing manifest file '../../build/robot_audio/robot_audio.egg-info/SOURCES.txt'
+[2.475s] reading manifest file '../../build/robot_audio/robot_audio.egg-info/SOURCES.txt'
+[2.477s] writing manifest file '../../build/robot_audio/robot_audio.egg-info/SOURCES.txt'
+[2.478s] running build
+[2.478s] running build_py
+[2.479s] creating /home/warxen/ai_robot/ros2_ws/build/robot_audio/build
+[2.480s] creating /home/warxen/ai_robot/ros2_ws/build/robot_audio/build/lib
+[2.480s] creating /home/warxen/ai_robot/ros2_ws/build/robot_audio/build/lib/robot_audio
+[2.480s] copying robot_audio/__init__.py -> /home/warxen/ai_robot/ros2_ws/build/robot_audio/build/lib/robot_audio
+[2.480s] running install
+[2.480s] running install_lib
+[2.481s] creating /home/warxen/ai_robot/ros2_ws/install/robot_audio/lib/python3.10/site-packages/robot_audio
+[2.481s] copying /home/warxen/ai_robot/ros2_ws/build/robot_audio/build/lib/robot_audio/__init__.py -> /home/warxen/ai_robot/ros2_ws/install/robot_audio/lib/python3.10/site-packages/robot_audio
+[2.482s] byte-compiling /home/warxen/ai_robot/ros2_ws/install/robot_audio/lib/python3.10/site-packages/robot_audio/__init__.py to __init__.cpython-310.pyc
+[2.482s] running install_data
+[2.483s] creating /home/warxen/ai_robot/ros2_ws/install/robot_audio/share/ament_index
+[2.483s] creating /home/warxen/ai_robot/ros2_ws/install/robot_audio/share/ament_index/resource_index
+[2.483s] creating /home/warxen/ai_robot/ros2_ws/install/robot_audio/share/ament_index/resource_index/packages
+[2.483s] copying resource/robot_audio -> /home/warxen/ai_robot/ros2_ws/install/robot_audio/share/ament_index/resource_index/packages
+[2.483s] copying package.xml -> /home/warxen/ai_robot/ros2_ws/install/robot_audio/share/robot_audio
+[2.484s] running install_egg_info
+[2.487s] Copying ../../build/robot_audio/robot_audio.egg-info to /home/warxen/ai_robot/ros2_ws/install/robot_audio/lib/python3.10/site-packages/robot_audio-0.0.0-py3.10.egg-info
+[2.489s] running install_scripts
+[2.544s] writing list of installed files to '/home/warxen/ai_robot/ros2_ws/build/robot_audio/install.log'
+[2.632s] Invoked command in '/home/warxen/ai_robot/ros2_ws/src/robot_audio' returned '0': NX_CONNECTION=192.168.1.126 12269 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_audio/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_audio/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_audio build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_audio/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_audio/install.log --single-version-externally-managed install_data

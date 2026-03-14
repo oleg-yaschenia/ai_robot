@@ -1,0 +1,21 @@
+[2.054s] Invoking command in '/home/warxen/ai_robot/ros2_ws/src/robot_bringup': NX_CONNECTION=192.168.1.126 12269 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_bringup/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_bringup/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_bringup build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_bringup/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_bringup/install.log --single-version-externally-managed install_data
+[2.465s] running egg_info
+[2.466s] writing ../../build/robot_bringup/robot_bringup.egg-info/PKG-INFO
+[2.467s] writing dependency_links to ../../build/robot_bringup/robot_bringup.egg-info/dependency_links.txt
+[2.467s] writing entry points to ../../build/robot_bringup/robot_bringup.egg-info/entry_points.txt
+[2.467s] writing requirements to ../../build/robot_bringup/robot_bringup.egg-info/requires.txt
+[2.467s] writing top-level names to ../../build/robot_bringup/robot_bringup.egg-info/top_level.txt
+[2.471s] reading manifest file '../../build/robot_bringup/robot_bringup.egg-info/SOURCES.txt'
+[2.473s] writing manifest file '../../build/robot_bringup/robot_bringup.egg-info/SOURCES.txt'
+[2.473s] running build
+[2.473s] running build_py
+[2.473s] running install
+[2.474s] running install_lib
+[2.476s] running install_data
+[2.476s] copying launch/base_sensors.launch.py -> /home/warxen/ai_robot/ros2_ws/install/robot_bringup/share/robot_bringup/launch
+[2.477s] running install_egg_info
+[2.480s] removing '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/lib/python3.10/site-packages/robot_bringup-0.0.0-py3.10.egg-info' (and everything under it)
+[2.481s] Copying ../../build/robot_bringup/robot_bringup.egg-info to /home/warxen/ai_robot/ros2_ws/install/robot_bringup/lib/python3.10/site-packages/robot_bringup-0.0.0-py3.10.egg-info
+[2.483s] running install_scripts
+[2.523s] writing list of installed files to '/home/warxen/ai_robot/ros2_ws/build/robot_bringup/install.log'
+[2.650s] Invoked command in '/home/warxen/ai_robot/ros2_ws/src/robot_bringup' returned '0': NX_CONNECTION=192.168.1.126 12269 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_bringup/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_bringup/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_bringup build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_bringup/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_bringup/install.log --single-version-externally-managed install_data
