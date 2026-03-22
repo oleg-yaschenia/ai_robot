@@ -1,0 +1,12 @@
+Metadata-Version: 2.1
+Name: robot-esp32-bridge
+Version: 0.0.1
+Summary: ROS2 bridge for Jetson <-> ESP32 robot controller
+Home-page: UNKNOWN
+Maintainer: warxen
+Maintainer-email: warxen@example.com
+License: MIT
+Platform: UNKNOWN
+
+UNKNOWN
+

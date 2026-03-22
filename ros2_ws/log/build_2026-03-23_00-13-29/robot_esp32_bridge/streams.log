@@ -1,0 +1,34 @@
+[1.280s] Invoking command in '/home/warxen/ai_robot/ros2_ws/src/robot_esp32_bridge': NX_CONNECTION=192.168.1.126 7359 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_esp32_bridge build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/install.log --single-version-externally-managed install_data
+[1.734s] running egg_info
+[1.735s] writing ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/PKG-INFO
+[1.736s] writing dependency_links to ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/dependency_links.txt
+[1.736s] writing entry points to ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/entry_points.txt
+[1.737s] writing requirements to ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/requires.txt
+[1.737s] writing top-level names to ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/top_level.txt
+[1.741s] reading manifest file '../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/SOURCES.txt'
+[1.743s] writing manifest file '../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/SOURCES.txt'
+[1.743s] running build
+[1.743s] running build_py
+[1.744s] copying robot_esp32_bridge/esp32_protocol.py -> /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/build/lib/robot_esp32_bridge
+[1.746s] copying robot_esp32_bridge/neck_demo_publisher.py -> /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/build/lib/robot_esp32_bridge
+[1.746s] copying robot_esp32_bridge/neck_bridge_node.py -> /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/build/lib/robot_esp32_bridge
+[1.746s] running install
+[1.747s] running install_lib
+[1.750s] copying /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/build/lib/robot_esp32_bridge/esp32_protocol.py -> /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge
+[1.750s] copying /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/build/lib/robot_esp32_bridge/neck_demo_publisher.py -> /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge
+[1.750s] copying /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/build/lib/robot_esp32_bridge/neck_bridge_node.py -> /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge
+[1.752s] byte-compiling /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge/esp32_protocol.py to esp32_protocol.cpython-310.pyc
+[1.755s] byte-compiling /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge/neck_demo_publisher.py to neck_demo_publisher.cpython-310.pyc
+[1.756s] byte-compiling /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge/neck_bridge_node.py to neck_bridge_node.cpython-310.pyc
+[1.757s] running install_data
+[1.757s] running install_egg_info
+[1.761s] removing '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge-0.0.1-py3.10.egg-info' (and everything under it)
+[1.761s] Copying ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge-0.0.1-py3.10.egg-info
+[1.764s] running install_scripts
+[1.806s] Installing esp32_bridge_node script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge
+[1.806s] Installing head_demo_publisher script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge
+[1.806s] Installing head_state_manager script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge
+[1.807s] Installing neck_bridge_node script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge
+[1.807s] Installing neck_demo_publisher script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge
+[1.808s] writing list of installed files to '/home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/install.log'
+[1.878s] Invoked command in '/home/warxen/ai_robot/ros2_ws/src/robot_esp32_bridge' returned '0': NX_CONNECTION=192.168.1.126 7359 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_esp32_bridge build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/install.log --single-version-externally-managed install_data

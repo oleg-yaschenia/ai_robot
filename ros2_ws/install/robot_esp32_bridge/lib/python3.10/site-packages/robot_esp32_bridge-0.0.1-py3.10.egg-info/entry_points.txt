@@ -1,0 +1,8 @@
+[console_scripts]
+esp32_bridge_node = robot_esp32_bridge.esp32_bridge_node:main
+head_demo_publisher = robot_esp32_bridge.head_demo_publisher:main
+head_state_manager = robot_esp32_bridge.head_state_manager:main
+neck_bridge_node = robot_esp32_bridge.neck_bridge_node:main
+neck_demo_publisher = robot_esp32_bridge.neck_demo_publisher:main
+neck_state_manager = robot_esp32_bridge.neck_state_manager:main
+
