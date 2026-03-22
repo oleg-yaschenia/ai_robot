@@ -1,0 +1,52 @@
+[0.000000] (-) TimerEvent: {}
+[0.001008] (-) JobUnselected: {'identifier': 'robot_audio'}
+[0.001309] (-) JobUnselected: {'identifier': 'robot_bringup'}
+[0.001547] (-) JobUnselected: {'identifier': 'robot_camera'}
+[0.001648] (robot_esp32_bridge) JobQueued: {'identifier': 'robot_esp32_bridge', 'dependencies': OrderedDict()}
+[0.001731] (robot_esp32_bridge) JobStarted: {'identifier': 'robot_esp32_bridge'}
+[0.099490] (-) TimerEvent: {}
+[0.200089] (-) TimerEvent: {}
+[0.300677] (-) TimerEvent: {}
+[0.401267] (-) TimerEvent: {}
+[0.501874] (-) TimerEvent: {}
+[0.602493] (-) TimerEvent: {}
+[0.703048] (-) TimerEvent: {}
+[0.803627] (-) TimerEvent: {}
+[0.904217] (-) TimerEvent: {}
+[1.004817] (-) TimerEvent: {}
+[1.105386] (-) TimerEvent: {}
+[1.205991] (-) TimerEvent: {}
+[1.210501] (robot_esp32_bridge) Command: {'cmd': ['/usr/bin/python3', '-W', 'ignore:setup.py install is deprecated', '-W', 'ignore:easy_install command is deprecated', 'setup.py', 'egg_info', '--egg-base', '../../build/robot_esp32_bridge', 'build', '--build-base', '/home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/build', 'install', '--record', '/home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/install.log', '--single-version-externally-managed', 'install_data'], 'cwd': '/home/warxen/ai_robot/ros2_ws/src/robot_esp32_bridge', 'env': {'NX_ROOT': '/home/warxen/.nx', 'LESSOPEN': '| /usr/bin/lesspipe %s', 'PULSE_CLIENTCONFIG': '/home/warxen/.nx/devices/D-1001-A8FCD5082E4F5B5A617136E9FA0EA27D/audio/client.conf', 'MAIL': '/var/mail/warxen', 'USER': 'warxen', 'XDG_SESSION_TYPE': 'x11', 'NX_SYSTEM': '/usr/NX', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib', 'HOME': '/home/warxen', 'OLDPWD': '/home/warxen/ai_robot/ros2_ws', 'DESKTOP_SESSION': 'ubuntu-xorg', 'JETSON_L4T': '36.5.0', 'ROS_PYTHON_VERSION': '3', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'JETSON_MODEL': 'NVIDIA Jetson Orin Nano Engineering Reference Developer Kit Super', 'DBUS_SESSION_BUS_ADDRESS': 'unix:abstract=/tmp/dbus-DZx6oBeAj5,guid=9a8c08b160930aaafceb880e69bff69c', 'COLORTERM': 'truecolor', 'PULSE_SCRIPT': '/home/warxen/.nx/devices/D-1001-A8FCD5082E4F5B5A617136E9FA0EA27D/audio/default.pa', 'WAYLAND_DISPLAY': 'no', 'COLCON_PREFIX_PATH': '/home/warxen/ai_robot/ros2_ws/install', 'ROS_DISTRO': 'humble', 'LOGNAME': 'warxen', 'JETSON_MODULE': 'NVIDIA Jetson Orin Nano (Developer kit)', 'JETSON_SERIAL_NUMBER': '1424125056788', 'PULSE_SERVER': '/home/warxen/.nx/devices/D-1001-A8FCD5082E4F5B5A617136E9FA0EA27D/audio/native.socket', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'USERNAME': 'warxen', 'TERM': 'xterm-256color', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_LOCALHOST_ONLY': '0', 'PATH': '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin', 'SESSION_MANAGER': 'local/jetson:@/tmp/.ICE-unix/2172,unix/jetson:/tmp/.ICE-unix/2172', 'PULSE_RUNTIME_PATH': '/run/user/1000/pulse', 'XDG_MENU_PREFIX': 'gnome-', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/2b00f4ec_09f3_4a8c_aee1_440eb151e4c5', 'XDG_RUNTIME_DIR': '/run/user/1000', 'PULSE_CONFIG': '/home/warxen/.nx/devices/D-1001-A8FCD5082E4F5B5A617136E9FA0EA27D/audio/daemon.conf', 'GDK_BACKEND': 'x11', 'DISPLAY': ':1001', 'LANG': 'en_US.UTF-8', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'NX_TEMP': '/tmp', 'XMODIFIERS': '@im=ibus', 'XAUTHORITY': '/home/warxen/.Xauthority', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:', 'JETSON_SOC': 'tegra234', 'GNOME_TERMINAL_SERVICE': ':1.102', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'AMENT_PREFIX_PATH': '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge:/home/warxen/ai_robot/ros2_ws/install/robot_camera:/home/warxen/ai_robot/ros2_ws/install/robot_bringup:/home/warxen/ai_robot/ros2_ws/install/robot_audio:/opt/ros/humble', 'SHELL': '/bin/bash', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'NX_SESSION_ID': 'A8FCD5082E4F5B5A617136E9FA0EA27D', 'QT_IM_MODULE': 'ibus', 'JETSON_CUDA_ARCH_BIN': '8.7', 'PWD': '/home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge', 'NX_RUNNER': '/usr/NX/bin/nxrunner', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu-xorg:/etc/xdg', 'XDG_DATA_DIRS': '/usr/share/ubuntu-xorg:/usr/share/gnome:/home/warxen/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages:/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages:/home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages:/home/warxen/ai_robot/ros2_ws/install/robot_bringup/lib/python3.10/site-packages:/home/warxen/ai_robot/ros2_ws/install/robot_audio/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages', 'COLCON': '1', 'VTE_VERSION': '6800', 'JETSON_JETPACK': '', 'NX_CONNECTION': '192.168.1.126 7359 192.168.1.127 4000', 'JETSON_P_NUMBER': 'p3767-0005', 'NXDIR': '/usr/NX'}, 'shell': False}
+[1.306184] (-) TimerEvent: {}
+[1.406766] (-) TimerEvent: {}
+[1.507339] (-) TimerEvent: {}
+[1.607925] (-) TimerEvent: {}
+[1.670868] (robot_esp32_bridge) StdoutLine: {'line': b'running egg_info\n'}
+[1.672190] (robot_esp32_bridge) StdoutLine: {'line': b'writing ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/PKG-INFO\n'}
+[1.672773] (robot_esp32_bridge) StdoutLine: {'line': b'writing dependency_links to ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/dependency_links.txt\n'}
+[1.673199] (robot_esp32_bridge) StdoutLine: {'line': b'writing entry points to ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/entry_points.txt\n'}
+[1.673492] (robot_esp32_bridge) StdoutLine: {'line': b'writing requirements to ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/requires.txt\n'}
+[1.673703] (robot_esp32_bridge) StdoutLine: {'line': b'writing top-level names to ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/top_level.txt\n'}
+[1.677194] (robot_esp32_bridge) StdoutLine: {'line': b"reading manifest file '../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/SOURCES.txt'\n"}
+[1.678963] (robot_esp32_bridge) StdoutLine: {'line': b"writing manifest file '../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/SOURCES.txt'\n"}
+[1.679249] (robot_esp32_bridge) StdoutLine: {'line': b'running build\n'}
+[1.679400] (robot_esp32_bridge) StdoutLine: {'line': b'running build_py\n'}
+[1.680452] (robot_esp32_bridge) StdoutLine: {'line': b'running install\n'}
+[1.681081] (robot_esp32_bridge) StdoutLine: {'line': b'running install_lib\n'}
+[1.684195] (robot_esp32_bridge) StdoutLine: {'line': b'running install_data\n'}
+[1.684439] (robot_esp32_bridge) StdoutLine: {'line': b'running install_egg_info\n'}
+[1.687678] (robot_esp32_bridge) StdoutLine: {'line': b"removing '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge-0.0.1-py3.10.egg-info' (and everything under it)\n"}
+[1.688427] (robot_esp32_bridge) StdoutLine: {'line': b'Copying ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge-0.0.1-py3.10.egg-info\n'}
+[1.690337] (robot_esp32_bridge) StdoutLine: {'line': b'running install_scripts\n'}
+[1.708010] (-) TimerEvent: {}
+[1.731983] (robot_esp32_bridge) StdoutLine: {'line': b'Installing esp32_bridge_node script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge\n'}
+[1.732715] (robot_esp32_bridge) StdoutLine: {'line': b'Installing head_demo_publisher script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge\n'}
+[1.732965] (robot_esp32_bridge) StdoutLine: {'line': b'Installing head_state_manager script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge\n'}
+[1.733192] (robot_esp32_bridge) StdoutLine: {'line': b'Installing neck_bridge_node script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge\n'}
+[1.733365] (robot_esp32_bridge) StdoutLine: {'line': b'Installing neck_demo_publisher script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge\n'}
+[1.733555] (robot_esp32_bridge) StdoutLine: {'line': b'Installing neck_state_manager script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge\n'}
+[1.734432] (robot_esp32_bridge) StdoutLine: {'line': b"writing list of installed files to '/home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/install.log'\n"}
+[1.804552] (robot_esp32_bridge) CommandEnded: {'returncode': 0}
+[1.808253] (-) TimerEvent: {}
+[1.839421] (robot_esp32_bridge) JobEnded: {'identifier': 'robot_esp32_bridge', 'rc': 0}
+[1.841754] (-) EventReactorShutdown: {}
