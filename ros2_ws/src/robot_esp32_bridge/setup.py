@@ -1,4 +1,6 @@
 from setuptools import setup
+from glob import glob
+import os
 
 package_name = "robot_esp32_bridge"
 
@@ -8,7 +10,7 @@ setup(
     packages=[package_name],
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
-        ("share/" + package_name, ["package.xml"]),
+        ("share/" + package_name, ["package.xml"]), (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
     ],
     install_requires=["setuptools", "pyserial"],
     zip_safe=True,
@@ -25,6 +27,7 @@ setup(
             "neck_bridge_node = robot_esp32_bridge.neck_bridge_node:main",
             "neck_demo_publisher = robot_esp32_bridge.neck_demo_publisher:main",
             "neck_state_manager = robot_esp32_bridge.neck_state_manager:main",
+            "drive_bridge_node = robot_esp32_bridge.drive_bridge_node:main",
         ],
     },
 )

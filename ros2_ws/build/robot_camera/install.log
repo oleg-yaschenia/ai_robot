@@ -1,7 +1,12 @@
 /home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages/robot_camera/__init__.py
+/home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages/robot_camera/stereo_camera_node.py
 /home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages/robot_camera/__pycache__/__init__.cpython-310.pyc
+/home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages/robot_camera/__pycache__/stereo_camera_node.cpython-310.pyc
 /home/warxen/ai_robot/ros2_ws/install/robot_camera/share/ament_index/resource_index/packages/robot_camera
 /home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/package.xml
+/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/launch/stereo_rectify.launch.py
+/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/launch/stereo_camera.launch.py
+/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/launch/stereo_disparity.launch.py
 /home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages/robot_camera-0.0.0-py3.10.egg-info/entry_points.txt
 /home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages/robot_camera-0.0.0-py3.10.egg-info/dependency_links.txt
 /home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages/robot_camera-0.0.0-py3.10.egg-info/top_level.txt
@@ -9,3 +14,4 @@
 /home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages/robot_camera-0.0.0-py3.10.egg-info/zip-safe
 /home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages/robot_camera-0.0.0-py3.10.egg-info/PKG-INFO
 /home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages/robot_camera-0.0.0-py3.10.egg-info/SOURCES.txt
+/home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/robot_camera/stereo_camera_node

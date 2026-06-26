@@ -8,8 +8,12 @@ setup.py
 ../../build/robot_camera/robot_camera.egg-info/requires.txt
 ../../build/robot_camera/robot_camera.egg-info/top_level.txt
 ../../build/robot_camera/robot_camera.egg-info/zip-safe
+launch/stereo_camera.launch.py
+launch/stereo_disparity.launch.py
+launch/stereo_rectify.launch.py
 resource/robot_camera
 robot_camera/__init__.py
+robot_camera/stereo_camera_node.py
 test/test_copyright.py
 test/test_flake8.py
 test/test_pep257.py

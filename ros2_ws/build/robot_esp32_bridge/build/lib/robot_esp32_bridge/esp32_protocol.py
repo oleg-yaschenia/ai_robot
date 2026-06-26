@@ -25,6 +25,12 @@ CMD_SET_NECK_PITCH = 0x53   # pitchOffset
 CMD_SET_NECK_POSE = 0x54
 CMD_NECK_ACK = 0x55
 
+# Wheel commands
+CMD_SET_WHEEL_SPEED = 0x70
+CMD_SET_ALL_WHEEL_SPEEDS = 0x71
+CMD_WHEELS_STOP = 0x72
+CMD_WHEELS_ACK = 0x73
+
 
 def crc8(data: bytes) -> int:
     crc = 0x00
@@ -186,6 +192,30 @@ class Esp32Protocol:
             CMD_SET_NECK_POSE,
             payload,
             ack_cmd=CMD_NECK_ACK,
+        )
+        # ---------------- Wheels ----------------
+
+    def set_wheel_speed(self, wheel_id: int, speed: float) -> bool:
+        payload = bytes([wheel_id & 0xFF]) + struct.pack("<f", float(speed))
+        return self._send_packet(
+            CMD_SET_WHEEL_SPEED,
+            payload,
+            ack_cmd=CMD_WHEELS_ACK,
+        )
+
+    def set_all_wheel_speeds(self, fl: float, rl: float, fr: float, rr: float) -> bool:
+        payload = struct.pack("<ffff", float(fl), float(rl), float(fr), float(rr))
+        return self._send_packet(
+            CMD_SET_ALL_WHEEL_SPEEDS,
+            payload,
+            ack_cmd=CMD_WHEELS_ACK,
+        )
+
+    def wheels_stop(self) -> bool:
+        return self._send_packet(
+            CMD_WHEELS_STOP,
+            b"",
+            ack_cmd=CMD_WHEELS_ACK,
         )
 
     def close(self) -> None:

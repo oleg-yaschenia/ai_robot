@@ -1,0 +1,238 @@
+[0.229s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--packages-select', 'robot_bringup', 'robot_esp32_bridge', 'robot_camera']
+[0.229s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=6, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=['robot_bringup', 'robot_esp32_bridge', 'robot_camera'], packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, verb_parser=<colcon_defaults.argument_parser.defaults.DefaultArgumentsDecorator object at 0xffffaf077430>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0xffffaf076e60>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0xffffaf076e60>>)
+[0.548s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.548s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.548s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.548s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.548s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.549s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.549s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/warxen/ai_robot/ros2_ws'
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.575s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[0.575s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[0.575s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[0.575s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[0.575s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[0.576s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[0.576s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[0.576s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[0.576s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[0.577s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[0.577s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[0.577s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[0.577s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[0.577s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[0.577s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['ignore', 'ignore_ament_install']
+[0.577s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ignore'
+[0.578s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ignore_ament_install'
+[0.578s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['colcon_pkg']
+[0.578s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'colcon_pkg'
+[0.578s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['colcon_meta']
+[0.578s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'colcon_meta'
+[0.578s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['ros']
+[0.578s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ros'
+[0.578s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['cmake', 'python']
+[0.578s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'cmake'
+[0.578s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'python'
+[0.579s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['python_setup_py']
+[0.579s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'python_setup_py'
+[0.579s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_audio) by extensions ['ignore', 'ignore_ament_install']
+[0.579s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_audio) by extension 'ignore'
+[0.579s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_audio) by extension 'ignore_ament_install'
+[0.579s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_audio) by extensions ['colcon_pkg']
+[0.579s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_audio) by extension 'colcon_pkg'
+[0.579s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_audio) by extensions ['colcon_meta']
+[0.579s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_audio) by extension 'colcon_meta'
+[0.580s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_audio) by extensions ['ros']
+[0.580s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_audio) by extension 'ros'
+[0.584s] DEBUG:colcon.colcon_core.package_identification:Package 'src/robot_audio' with type 'ros.ament_python' and name 'robot_audio'
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_bringup) by extensions ['ignore', 'ignore_ament_install']
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_bringup) by extension 'ignore'
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_bringup) by extension 'ignore_ament_install'
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_bringup) by extensions ['colcon_pkg']
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_bringup) by extension 'colcon_pkg'
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_bringup) by extensions ['colcon_meta']
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_bringup) by extension 'colcon_meta'
+[0.586s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_bringup) by extensions ['ros']
+[0.586s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_bringup) by extension 'ros'
+[0.587s] DEBUG:colcon.colcon_core.package_identification:Package 'src/robot_bringup' with type 'ros.ament_python' and name 'robot_bringup'
+[0.587s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_camera) by extensions ['ignore', 'ignore_ament_install']
+[0.587s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_camera) by extension 'ignore'
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_camera) by extension 'ignore_ament_install'
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_camera) by extensions ['colcon_pkg']
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_camera) by extension 'colcon_pkg'
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_camera) by extensions ['colcon_meta']
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_camera) by extension 'colcon_meta'
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_camera) by extensions ['ros']
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_camera) by extension 'ros'
+[0.589s] DEBUG:colcon.colcon_core.package_identification:Package 'src/robot_camera' with type 'ros.ament_python' and name 'robot_camera'
+[0.589s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_esp32_bridge) by extensions ['ignore', 'ignore_ament_install']
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_esp32_bridge) by extension 'ignore'
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_esp32_bridge) by extension 'ignore_ament_install'
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_esp32_bridge) by extensions ['colcon_pkg']
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_esp32_bridge) by extension 'colcon_pkg'
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_esp32_bridge) by extensions ['colcon_meta']
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_esp32_bridge) by extension 'colcon_meta'
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_esp32_bridge) by extensions ['ros']
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(src/robot_esp32_bridge) by extension 'ros'
+[0.591s] DEBUG:colcon.colcon_core.package_identification:Package 'src/robot_esp32_bridge' with type 'ros.ament_python' and name 'robot_esp32_bridge'
+[0.591s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.592s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.592s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.592s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.592s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[0.633s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'robot_audio' in 'src/robot_audio'
+[0.634s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[0.634s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[0.638s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 4 installed packages in /home/warxen/ai_robot/ros2_ws/install
+[0.640s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 184 installed packages in /opt/ros/humble
+[0.642s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[0.725s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'cmake_args' from command line to 'None'
+[0.726s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'cmake_target' from command line to 'None'
+[0.726s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.726s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'cmake_clean_cache' from command line to 'False'
+[0.726s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'cmake_clean_first' from command line to 'False'
+[0.726s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'cmake_force_configure' from command line to 'False'
+[0.726s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'ament_cmake_args' from command line to 'None'
+[0.726s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'catkin_cmake_args' from command line to 'None'
+[0.726s] Level 5:colcon.colcon_core.verb:set package 'robot_bringup' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.726s] DEBUG:colcon.colcon_core.verb:Building package 'robot_bringup' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/warxen/ai_robot/ros2_ws/build/robot_bringup', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/warxen/ai_robot/ros2_ws/install/robot_bringup', 'merge_install': False, 'path': '/home/warxen/ai_robot/ros2_ws/src/robot_bringup', 'symlink_install': False, 'test_result_base': None}
+[0.727s] Level 5:colcon.colcon_core.verb:set package 'robot_camera' build argument 'cmake_args' from command line to 'None'
+[0.727s] Level 5:colcon.colcon_core.verb:set package 'robot_camera' build argument 'cmake_target' from command line to 'None'
+[0.727s] Level 5:colcon.colcon_core.verb:set package 'robot_camera' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.727s] Level 5:colcon.colcon_core.verb:set package 'robot_camera' build argument 'cmake_clean_cache' from command line to 'False'
+[0.727s] Level 5:colcon.colcon_core.verb:set package 'robot_camera' build argument 'cmake_clean_first' from command line to 'False'
+[0.727s] Level 5:colcon.colcon_core.verb:set package 'robot_camera' build argument 'cmake_force_configure' from command line to 'False'
+[0.727s] Level 5:colcon.colcon_core.verb:set package 'robot_camera' build argument 'ament_cmake_args' from command line to 'None'
+[0.727s] Level 5:colcon.colcon_core.verb:set package 'robot_camera' build argument 'catkin_cmake_args' from command line to 'None'
+[0.727s] Level 5:colcon.colcon_core.verb:set package 'robot_camera' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.727s] DEBUG:colcon.colcon_core.verb:Building package 'robot_camera' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/warxen/ai_robot/ros2_ws/build/robot_camera', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/warxen/ai_robot/ros2_ws/install/robot_camera', 'merge_install': False, 'path': '/home/warxen/ai_robot/ros2_ws/src/robot_camera', 'symlink_install': False, 'test_result_base': None}
+[0.728s] Level 5:colcon.colcon_core.verb:set package 'robot_esp32_bridge' build argument 'cmake_args' from command line to 'None'
+[0.728s] Level 5:colcon.colcon_core.verb:set package 'robot_esp32_bridge' build argument 'cmake_target' from command line to 'None'
+[0.728s] Level 5:colcon.colcon_core.verb:set package 'robot_esp32_bridge' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.728s] Level 5:colcon.colcon_core.verb:set package 'robot_esp32_bridge' build argument 'cmake_clean_cache' from command line to 'False'
+[0.728s] Level 5:colcon.colcon_core.verb:set package 'robot_esp32_bridge' build argument 'cmake_clean_first' from command line to 'False'
+[0.728s] Level 5:colcon.colcon_core.verb:set package 'robot_esp32_bridge' build argument 'cmake_force_configure' from command line to 'False'
+[0.728s] Level 5:colcon.colcon_core.verb:set package 'robot_esp32_bridge' build argument 'ament_cmake_args' from command line to 'None'
+[0.728s] Level 5:colcon.colcon_core.verb:set package 'robot_esp32_bridge' build argument 'catkin_cmake_args' from command line to 'None'
+[0.729s] Level 5:colcon.colcon_core.verb:set package 'robot_esp32_bridge' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.729s] DEBUG:colcon.colcon_core.verb:Building package 'robot_esp32_bridge' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge', 'merge_install': False, 'path': '/home/warxen/ai_robot/ros2_ws/src/robot_esp32_bridge', 'symlink_install': False, 'test_result_base': None}
+[0.729s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[0.731s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[0.732s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/warxen/ai_robot/ros2_ws/src/robot_bringup' with build type 'ament_python'
+[0.732s] Level 1:colcon.colcon_core.shell:create_environment_hook('robot_bringup', 'ament_prefix_path')
+[0.737s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.737s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/share/robot_bringup/hook/ament_prefix_path.ps1'
+[0.739s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/share/robot_bringup/hook/ament_prefix_path.dsv'
+[0.740s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/share/robot_bringup/hook/ament_prefix_path.sh'
+[0.742s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.742s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.748s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/warxen/ai_robot/ros2_ws/src/robot_camera' with build type 'ament_python'
+[0.748s] Level 1:colcon.colcon_core.shell:create_environment_hook('robot_camera', 'ament_prefix_path')
+[0.749s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/hook/ament_prefix_path.ps1'
+[0.750s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/hook/ament_prefix_path.dsv'
+[0.751s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/hook/ament_prefix_path.sh'
+[0.753s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.753s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.758s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/warxen/ai_robot/ros2_ws/src/robot_esp32_bridge' with build type 'ament_python'
+[0.758s] Level 1:colcon.colcon_core.shell:create_environment_hook('robot_esp32_bridge', 'ament_prefix_path')
+[0.759s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/hook/ament_prefix_path.ps1'
+[0.760s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/hook/ament_prefix_path.dsv'
+[0.760s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/hook/ament_prefix_path.sh'
+[0.762s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.762s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.288s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/warxen/ai_robot/ros2_ws/src/robot_bringup'
+[1.289s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.289s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.816s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/warxen/ai_robot/ros2_ws/src/robot_camera'
+[1.817s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.817s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[2.329s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/warxen/ai_robot/ros2_ws/src/robot_esp32_bridge'
+[2.330s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[2.330s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[3.054s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/warxen/ai_robot/ros2_ws/src/robot_camera': NX_CONNECTION=192.168.1.126 10285 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_camera/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_camera build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_camera/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_camera/install.log --single-version-externally-managed install_data
+[3.066s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/warxen/ai_robot/ros2_ws/src/robot_bringup': NX_CONNECTION=192.168.1.126 10285 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_bringup/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_bringup/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_bringup build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_bringup/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_bringup/install.log --single-version-externally-managed install_data
+[3.072s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/warxen/ai_robot/ros2_ws/src/robot_esp32_bridge': NX_CONNECTION=192.168.1.126 10285 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_esp32_bridge build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/install.log --single-version-externally-managed install_data
+[3.672s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/warxen/ai_robot/ros2_ws/src/robot_camera' returned '0': NX_CONNECTION=192.168.1.126 10285 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_camera/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_camera build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_camera/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_camera/install.log --single-version-externally-managed install_data
+[3.674s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_camera' for CMake module files
+[3.675s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_camera' for CMake config files
+[3.677s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_camera/lib'
+[3.677s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_camera/bin'
+[3.677s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/pkgconfig/robot_camera.pc'
+[3.678s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages'
+[3.678s] Level 1:colcon.colcon_core.shell:create_environment_hook('robot_camera', 'pythonpath')
+[3.679s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/hook/pythonpath.ps1'
+[3.680s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/hook/pythonpath.dsv'
+[3.681s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/hook/pythonpath.sh'
+[3.682s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_camera/bin'
+[3.683s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(robot_camera)
+[3.683s] INFO:colcon.colcon_core.shell:Creating package script '/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/package.ps1'
+[3.685s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/package.dsv'
+[3.687s] INFO:colcon.colcon_core.shell:Creating package script '/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/package.sh'
+[3.688s] INFO:colcon.colcon_core.shell:Creating package script '/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/package.bash'
+[3.690s] INFO:colcon.colcon_core.shell:Creating package script '/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/package.zsh'
+[3.692s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/warxen/ai_robot/ros2_ws/install/robot_camera/share/colcon-core/packages/robot_camera)
+[3.695s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_bringup' for CMake module files
+[3.696s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_bringup' for CMake config files
+[3.698s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/warxen/ai_robot/ros2_ws/src/robot_bringup' returned '0': NX_CONNECTION=192.168.1.126 10285 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_bringup/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_bringup/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_bringup build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_bringup/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_bringup/install.log --single-version-externally-managed install_data
+[3.700s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/lib'
+[3.700s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/bin'
+[3.700s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/lib/pkgconfig/robot_bringup.pc'
+[3.701s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/lib/python3.10/site-packages'
+[3.701s] Level 1:colcon.colcon_core.shell:create_environment_hook('robot_bringup', 'pythonpath')
+[3.701s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/share/robot_bringup/hook/pythonpath.ps1'
+[3.703s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/share/robot_bringup/hook/pythonpath.dsv'
+[3.704s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/share/robot_bringup/hook/pythonpath.sh'
+[3.705s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/bin'
+[3.705s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(robot_bringup)
+[3.706s] INFO:colcon.colcon_core.shell:Creating package script '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/share/robot_bringup/package.ps1'
+[3.707s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/share/robot_bringup/package.dsv'
+[3.708s] INFO:colcon.colcon_core.shell:Creating package script '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/share/robot_bringup/package.sh'
+[3.709s] INFO:colcon.colcon_core.shell:Creating package script '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/share/robot_bringup/package.bash'
+[3.710s] INFO:colcon.colcon_core.shell:Creating package script '/home/warxen/ai_robot/ros2_ws/install/robot_bringup/share/robot_bringup/package.zsh'
+[3.710s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/warxen/ai_robot/ros2_ws/install/robot_bringup/share/colcon-core/packages/robot_bringup)
+[3.713s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge' for CMake module files
+[3.714s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/warxen/ai_robot/ros2_ws/src/robot_esp32_bridge' returned '0': NX_CONNECTION=192.168.1.126 10285 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_esp32_bridge build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/install.log --single-version-externally-managed install_data
+[3.715s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge' for CMake config files
+[3.716s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib'
+[3.717s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/bin'
+[3.717s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/pkgconfig/robot_esp32_bridge.pc'
+[3.717s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages'
+[3.718s] Level 1:colcon.colcon_core.shell:create_environment_hook('robot_esp32_bridge', 'pythonpath')
+[3.718s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/hook/pythonpath.ps1'
+[3.719s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/hook/pythonpath.dsv'
+[3.720s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/hook/pythonpath.sh'
+[3.721s] Level 1:colcon.colcon_core.environment:checking '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/bin'
+[3.722s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(robot_esp32_bridge)
+[3.722s] INFO:colcon.colcon_core.shell:Creating package script '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/package.ps1'
+[3.723s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/package.dsv'
+[3.724s] INFO:colcon.colcon_core.shell:Creating package script '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/package.sh'
+[3.725s] INFO:colcon.colcon_core.shell:Creating package script '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/package.bash'
+[3.726s] INFO:colcon.colcon_core.shell:Creating package script '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/package.zsh'
+[3.726s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/colcon-core/packages/robot_esp32_bridge)
+[3.727s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[3.728s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[3.728s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[3.728s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[3.739s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[3.740s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[3.740s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[3.774s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[3.775s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/warxen/ai_robot/ros2_ws/install/local_setup.ps1'
+[3.778s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/warxen/ai_robot/ros2_ws/install/_local_setup_util_ps1.py'
+[3.782s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/warxen/ai_robot/ros2_ws/install/setup.ps1'
+[3.785s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/warxen/ai_robot/ros2_ws/install/local_setup.sh'
+[3.787s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/warxen/ai_robot/ros2_ws/install/_local_setup_util_sh.py'
+[3.789s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/warxen/ai_robot/ros2_ws/install/setup.sh'
+[3.792s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/warxen/ai_robot/ros2_ws/install/local_setup.bash'
+[3.793s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/warxen/ai_robot/ros2_ws/install/setup.bash'
+[3.795s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/warxen/ai_robot/ros2_ws/install/local_setup.zsh'
+[3.797s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/warxen/ai_robot/ros2_ws/install/setup.zsh'

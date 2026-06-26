@@ -1,0 +1,22 @@
+[1.215s] Invoking command in '/home/warxen/ai_robot/ros2_ws/src/robot_camera': NX_CONNECTION=192.168.1.126 10285 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_camera/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_camera build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_camera/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_camera/install.log --single-version-externally-managed install_data
+[1.678s] running egg_info
+[1.679s] writing ../../build/robot_camera/robot_camera.egg-info/PKG-INFO
+[1.680s] writing dependency_links to ../../build/robot_camera/robot_camera.egg-info/dependency_links.txt
+[1.680s] writing entry points to ../../build/robot_camera/robot_camera.egg-info/entry_points.txt
+[1.680s] writing requirements to ../../build/robot_camera/robot_camera.egg-info/requires.txt
+[1.681s] writing top-level names to ../../build/robot_camera/robot_camera.egg-info/top_level.txt
+[1.684s] reading manifest file '../../build/robot_camera/robot_camera.egg-info/SOURCES.txt'
+[1.686s] writing manifest file '../../build/robot_camera/robot_camera.egg-info/SOURCES.txt'
+[1.686s] running build
+[1.686s] running build_py
+[1.687s] running install
+[1.687s] running install_lib
+[1.690s] running install_data
+[1.690s] copying launch/stereo_camera.launch.py -> /home/warxen/ai_robot/ros2_ws/install/robot_camera/share/robot_camera/launch
+[1.690s] running install_egg_info
+[1.694s] removing '/home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages/robot_camera-0.0.0-py3.10.egg-info' (and everything under it)
+[1.695s] Copying ../../build/robot_camera/robot_camera.egg-info to /home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages/robot_camera-0.0.0-py3.10.egg-info
+[1.696s] running install_scripts
+[1.739s] Installing stereo_camera_node script to /home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/robot_camera
+[1.740s] writing list of installed files to '/home/warxen/ai_robot/ros2_ws/build/robot_camera/install.log'
+[1.809s] Invoked command in '/home/warxen/ai_robot/ros2_ws/src/robot_camera' returned '0': NX_CONNECTION=192.168.1.126 10285 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_camera/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_camera/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_camera build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_camera/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_camera/install.log --single-version-externally-managed install_data
