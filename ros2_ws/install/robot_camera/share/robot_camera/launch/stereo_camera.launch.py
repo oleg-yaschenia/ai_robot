@@ -18,7 +18,7 @@ def generate_launch_description():
                 {"right_sensor_id": 1},
                 {"width": 1280},
                 {"height": 720},
-                {"fps": 30},
+                {"fps": 10},
                 {"left_frame_id": "camera_left_optical_frame"},
                 {"right_frame_id": "camera_right_optical_frame"},
                 {"left_camera_info_yaml": "/home/warxen/ai_robot/calib/stereo/left.yaml"},

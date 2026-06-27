@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import cv2
+import yaml
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image, CameraInfo
 from cv_bridge import CvBridge
-import yaml
 
 
 def gstreamer_pipeline(sensor_id: int, width: int, height: int, fps: int) -> str:
@@ -12,8 +12,7 @@ def gstreamer_pipeline(sensor_id: int, width: int, height: int, fps: int) -> str
         f"nvarguscamerasrc sensor-id={sensor_id} ! "
         f"video/x-raw(memory:NVMM), width=(int){width}, height=(int){height}, "
         f"format=(string)NV12, framerate=(fraction){fps}/1 ! "
-        f"nvvidconv ! video/x-raw, format=(string)BGRx ! "
-        f"videoconvert ! video/x-raw, format=(string)BGR ! "
+        f"nvvidconv ! video/x-raw, format=(string)GRAY8 ! "
         f"appsink drop=true max-buffers=1 sync=false"
     )
 
@@ -29,24 +28,23 @@ def load_camera_info_from_yaml(path: str, frame_id: str, stamp):
     msg.width = int(data["image_width"])
     msg.height = int(data["image_height"])
     msg.distortion_model = data["distortion_model"]
-
     msg.d = [float(x) for x in data["distortion_coefficients"]["data"]]
     msg.k = [float(x) for x in data["camera_matrix"]["data"]]
     msg.r = [float(x) for x in data["rectification_matrix"]["data"]]
     msg.p = [float(x) for x in data["projection_matrix"]["data"]]
 
     return msg
-    
-    
+
+
 class StereoCameraNode(Node):
     def __init__(self):
         super().__init__("stereo_camera_node")
 
         self.declare_parameter("left_sensor_id", 0)
         self.declare_parameter("right_sensor_id", 1)
-        self.declare_parameter("width", 1280)
-        self.declare_parameter("height", 720)
-        self.declare_parameter("fps", 30)
+        self.declare_parameter("width", 640)
+        self.declare_parameter("height", 480)
+        self.declare_parameter("fps", 10)
         self.declare_parameter("left_frame_id", "camera_left_optical_frame")
         self.declare_parameter("right_frame_id", "camera_right_optical_frame")
         self.declare_parameter("left_camera_info_yaml", "/home/warxen/ai_robot/calib/stereo/left.yaml")
@@ -87,37 +85,46 @@ class StereoCameraNode(Node):
             f"right={self.right_sensor_id}, {self.width}x{self.height}@{self.fps}"
         )
 
-
     def timer_cb(self):
-        ok_l, frame_l = self.left_cap.read()
-        ok_r, frame_r = self.right_cap.read()
+        ok_gl = self.left_cap.grab()
+        ok_gr = self.right_cap.grab()
+
+        if not ok_gl:
+            self.get_logger().warning("Left camera grab failed")
+            return
+        if not ok_gr:
+            self.get_logger().warning("Right camera grab failed")
+            return
+
+        ok_l, frame_l = self.left_cap.retrieve()
+        ok_r, frame_r = self.right_cap.retrieve()
 
         if not ok_l or frame_l is None:
-            self.get_logger().warning("Left camera frame read failed")
+            self.get_logger().warning("Left camera retrieve failed")
             return
         if not ok_r or frame_r is None:
-            self.get_logger().warning("Right camera frame read failed")
+            self.get_logger().warning("Right camera retrieve failed")
             return
 
         stamp = self.get_clock().now().to_msg()
 
-        left_msg = self.bridge.cv2_to_imgmsg(frame_l, encoding="bgr8")
+        left_msg = self.bridge.cv2_to_imgmsg(frame_l, encoding="mono8")
         left_msg.header.stamp = stamp
         left_msg.header.frame_id = self.left_frame_id
 
-        right_msg = self.bridge.cv2_to_imgmsg(frame_r, encoding="bgr8")
+        right_msg = self.bridge.cv2_to_imgmsg(frame_r, encoding="mono8")
         right_msg.header.stamp = stamp
         right_msg.header.frame_id = self.right_frame_id
 
         self.left_pub.publish(left_msg)
         self.right_pub.publish(right_msg)
+
         self.left_info_pub.publish(
             load_camera_info_from_yaml(self.left_camera_info_yaml, self.left_frame_id, stamp)
         )
         self.right_info_pub.publish(
             load_camera_info_from_yaml(self.right_camera_info_yaml, self.right_frame_id, stamp)
         )
-
 
     def destroy_node(self):
         try:

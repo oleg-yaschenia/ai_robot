@@ -28,6 +28,7 @@ setup(
     entry_points={
         'console_scripts': [
         "stereo_camera_node = robot_camera.stereo_camera_node:main",
+        "isaac_vslam_relay_node = robot_camera.isaac_vslam_relay_node:main",        
         ],
     },
 )

@@ -1,0 +1,14 @@
+[0.000000] (-) TimerEvent: {}
+[0.000618] (-) JobUnselected: {'identifier': 'robot_audio'}
+[0.001093] (-) JobUnselected: {'identifier': 'robot_bringup'}
+[0.001375] (-) JobUnselected: {'identifier': 'robot_camera'}
+[0.001596] (-) JobUnselected: {'identifier': 'robot_esp32_bridge'}
+[0.001694] (robot_vision_assistant) JobQueued: {'identifier': 'robot_vision_assistant', 'dependencies': OrderedDict()}
+[0.001779] (robot_vision_assistant) JobStarted: {'identifier': 'robot_vision_assistant'}
+[0.099465] (-) TimerEvent: {}
+[0.200032] (-) TimerEvent: {}
+[0.300600] (-) TimerEvent: {}
+[0.401177] (-) TimerEvent: {}
+[0.501772] (-) TimerEvent: {}
+[0.561790] (robot_vision_assistant) JobEnded: {'identifier': 'robot_vision_assistant', 'rc': 0}
+[0.565117] (-) EventReactorShutdown: {}
