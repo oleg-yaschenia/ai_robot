@@ -1,0 +1,16 @@
+sample_id,scenario,expected_people,detected_people,expected_objects,detected_objects,perception_present
+20260628T124253.679911Z_001_ba91ac,empty_room,0,0,chair,,False
+20260628T124254.656006Z_002_119cdb,empty_room,0,0,chair,,True
+20260628T124255.549160Z_003_2abbbf,empty_room,0,0,chair,,True
+20260628T124256.451988Z_004_4b94db,empty_room,0,0,chair,,True
+20260628T124257.355511Z_005_a8d6b2,empty_room,0,0,chair,,True
+20260628T124353.673024Z_001_61f371,person_front_near,1,0,,,False
+20260628T124354.551676Z_002_4b1ba6,person_front_near,1,0,,,False
+20260628T124355.452324Z_003_cac8b7,person_front_near,1,1,,,True
+20260628T124356.349377Z_004_c580c4,person_front_near,1,1,,,True
+20260628T124357.252817Z_005_59b1e9,person_front_near,1,1,,,True
+20260628T124447.976579Z_001_80b009,object_in_hand_cup,1,1,cup,cup,True
+20260628T124448.951583Z_002_b2737e,object_in_hand_cup,1,1,cup,cup,True
+20260628T124449.849771Z_003_0894fa,object_in_hand_cup,1,1,cup,cup,True
+20260628T124450.749033Z_004_db5238,object_in_hand_cup,1,1,cup,cup,True
+20260628T124451.660908Z_005_2b5701,object_in_hand_cup,1,1,cup,cup,True

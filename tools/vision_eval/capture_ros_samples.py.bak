@@ -90,16 +90,11 @@ class VisionSampleCollector(Node):
         deadline = time.monotonic() + timeout_sec
         while rclpy.ok() and time.monotonic() < deadline:
             rclpy.spin_once(self, timeout_sec=0.1)
-            if (
-                self.data.left is not None
-                and self.data.right is not None
-                and self.data.perception_raw is not None
-                and self.data.scene_raw is not None
-            ):
+            if self.data.left is not None and self.data.right is not None:
                 return
         raise TimeoutError(
-            "Initial stereo images, perception state, or interpreted scene "
-            "were not received. Check camera and perception topics."
+            "No stereo images received. Check /camera/left/image_raw and "
+            "/camera/right/image_raw."
         )
 
     def wait_for_new_pair(self, last_left_stamp: int, timeout_sec: float) -> None:

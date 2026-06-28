@@ -25,16 +25,14 @@ def generate_launch_description():
                 "AI_ROBOT_ROOT",
                 default_value="/home/warxen/ai_robot",
             ),
-            description=(
-                "Repository root; may also be set with AI_ROBOT_ROOT"
-            ),
+            description="Repository root; may also be set with AI_ROBOT_ROOT",
         ),
         DeclareLaunchArgument(
             "yolo_model_path",
             default_value=PathJoinSubstitution([
                 project_root,
                 "ros2_ws",
-                "yolo11l.pt",
+                "yolo11s.pt",
             ]),
         ),
         DeclareLaunchArgument(
@@ -97,7 +95,6 @@ def generate_launch_description():
                 "ggml-base.bin",
             ]),
         ),
-
         Node(
             package="robot_vision_assistant",
             executable="yolo_perception_node",
@@ -106,40 +103,12 @@ def generate_launch_description():
             parameters=[
                 {"image_topic": "/camera/left/image_raw"},
                 {"model_path": yolo_model_path},
-                {"device": "0"},
-                {"imgsz": 640},
-                {"inference_conf_threshold": 0.10},
-                {"iou_threshold": 0.45},
-                {"analysis_period_sec": 0.25},
-                {"max_det": 100},
-                {"person_conf_threshold": 0.35},
-                {"pet_conf_threshold": 0.25},
-                {"cup_conf_threshold": 0.20},
-                {"chair_conf_threshold": 0.45},
-                {"default_conf_threshold": 0.35},
-                {"tv_conf_threshold": 0.55},
-                {"remote_conf_threshold": 0.55},
-                {"cell_phone_conf_threshold": 0.40},
-                {"mouse_conf_threshold": 0.40},
-                {"keyboard_conf_threshold": 0.30},
-                {"laptop_conf_threshold": 0.30},
-                {"track_iou_threshold": 0.15},
-                {"track_center_distance_factor": 2.5},
-                {"track_center_distance_min_px": 80.0},
-                {"velocity_alpha": 0.65},
-                {"duplicate_iou_threshold": 0.45},
-                {"duplicate_containment_threshold": 0.75},
-                {"default_confirm_hits": 3},
-                {"motion_extra_hits": 2},
-                {"max_missed_frames": 4},
-                {"noisy_max_missed_frames": 2},
-                {"immediate_conf_threshold": 0.85},
-                {"motion_threshold": 0.035},
-                {"motion_diff_threshold": 22},
-                {"motion_conf_boost": 0.10},
+                {"imgsz": 960},
+                {"conf_threshold": 0.5},
+                {"analysis_period_sec": 0.7},
+                {"max_det": 10},
             ],
         ),
-
         Node(
             package="robot_vision_assistant",
             executable="scene_interpreter_node",
@@ -152,7 +121,6 @@ def generate_launch_description():
                 {"change_iou_threshold": 0.35},
             ],
         ),
-
         Node(
             package="robot_vision_assistant",
             executable="vision_assistant_node",
@@ -167,7 +135,6 @@ def generate_launch_description():
                 {"db_path": db_path},
             ],
         ),
-
         Node(
             package="robot_vision_assistant",
             executable="tts_node",
@@ -184,7 +151,6 @@ def generate_launch_description():
                 {"tmp_dir": "/tmp/robot_tts"},
             ],
         ),
-
         Node(
             package="robot_vision_assistant",
             executable="asr_node",
@@ -217,7 +183,6 @@ def generate_launch_description():
                 {"min_utterance_ms": 400},
             ],
         ),
-
         Node(
             package="robot_vision_assistant",
             executable="voice_manager_node",

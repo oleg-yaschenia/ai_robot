@@ -12,8 +12,7 @@ def gstreamer_pipeline(sensor_id: int, width: int, height: int, fps: int) -> str
         f"nvarguscamerasrc sensor-id={sensor_id} ! "
         f"video/x-raw(memory:NVMM), width=(int){width}, height=(int){height}, "
         f"format=(string)NV12, framerate=(fraction){fps}/1 ! "
-        f"nvvidconv ! video/x-raw, format=(string)BGRx ! "
-        f"videoconvert ! video/x-raw, format=(string)BGR ! "
+        f"nvvidconv ! video/x-raw, format=(string)GRAY8 ! "
         f"appsink drop=true max-buffers=1 sync=false"
     )
 
@@ -109,11 +108,11 @@ class StereoCameraNode(Node):
 
         stamp = self.get_clock().now().to_msg()
 
-        left_msg = self.bridge.cv2_to_imgmsg(frame_l, encoding="bgr8")
+        left_msg = self.bridge.cv2_to_imgmsg(frame_l, encoding="mono8")
         left_msg.header.stamp = stamp
         left_msg.header.frame_id = self.left_frame_id
 
-        right_msg = self.bridge.cv2_to_imgmsg(frame_r, encoding="bgr8")
+        right_msg = self.bridge.cv2_to_imgmsg(frame_r, encoding="mono8")
         right_msg.header.stamp = stamp
         right_msg.header.frame_id = self.right_frame_id
 

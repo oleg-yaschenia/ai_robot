@@ -48,7 +48,7 @@ class YoloPerceptionNode(Node):
 
         # Minimum score returned by YOLO. Final acceptance uses per-class
         # thresholds below.
-        self.declare_parameter("inference_conf_threshold", 0.10)
+        self.declare_parameter("inference_conf_threshold", 0.05)
         self.declare_parameter("iou_threshold", 0.45)
         self.declare_parameter("analysis_period_sec", 0.25)
         self.declare_parameter("max_det", 100)
@@ -57,14 +57,7 @@ class YoloPerceptionNode(Node):
         self.declare_parameter("pet_conf_threshold", 0.25)
         self.declare_parameter("cup_conf_threshold", 0.20)
         self.declare_parameter("chair_conf_threshold", 0.45)
-        self.declare_parameter("default_conf_threshold", 0.35)
-
-        self.declare_parameter("tv_conf_threshold", 0.55)
-        self.declare_parameter("remote_conf_threshold", 0.55)
-        self.declare_parameter("cell_phone_conf_threshold", 0.40)
-        self.declare_parameter("mouse_conf_threshold", 0.40)
-        self.declare_parameter("keyboard_conf_threshold", 0.30)
-        self.declare_parameter("laptop_conf_threshold", 0.30)
+        self.declare_parameter("default_conf_threshold", 0.25)
 
         self.declare_parameter("track_iou_threshold", 0.15)
         self.declare_parameter("track_center_distance_factor", 2.5)
@@ -72,16 +65,9 @@ class YoloPerceptionNode(Node):
         self.declare_parameter("velocity_alpha", 0.65)
         self.declare_parameter("duplicate_iou_threshold", 0.45)
         self.declare_parameter("duplicate_containment_threshold", 0.75)
-
-        self.declare_parameter("default_confirm_hits", 3)
-        self.declare_parameter("motion_extra_hits", 2)
+        self.declare_parameter("confirm_hits", 2)
         self.declare_parameter("max_missed_frames", 4)
-        self.declare_parameter("noisy_max_missed_frames", 2)
-        self.declare_parameter("immediate_conf_threshold", 0.85)
-
-        self.declare_parameter("motion_threshold", 0.035)
-        self.declare_parameter("motion_diff_threshold", 22)
-        self.declare_parameter("motion_conf_boost", 0.10)
+        self.declare_parameter("immediate_conf_threshold", 0.75)
 
         self.image_topic = str(self.get_parameter("image_topic").value)
         self.model_path = str(self.get_parameter("model_path").value)
@@ -116,24 +102,6 @@ class YoloPerceptionNode(Node):
         self.default_conf_threshold = float(
             self.get_parameter("default_conf_threshold").value
         )
-        self.tv_conf_threshold = float(
-            self.get_parameter("tv_conf_threshold").value
-        )
-        self.remote_conf_threshold = float(
-            self.get_parameter("remote_conf_threshold").value
-        )
-        self.cell_phone_conf_threshold = float(
-            self.get_parameter("cell_phone_conf_threshold").value
-        )
-        self.mouse_conf_threshold = float(
-            self.get_parameter("mouse_conf_threshold").value
-        )
-        self.keyboard_conf_threshold = float(
-            self.get_parameter("keyboard_conf_threshold").value
-        )
-        self.laptop_conf_threshold = float(
-            self.get_parameter("laptop_conf_threshold").value
-        )
 
         self.track_iou_threshold = float(
             self.get_parameter("track_iou_threshold").value
@@ -153,29 +121,14 @@ class YoloPerceptionNode(Node):
         self.duplicate_containment_threshold = float(
             self.get_parameter("duplicate_containment_threshold").value
         )
-        self.default_confirm_hits = int(
-            self.get_parameter("default_confirm_hits").value
-        )
-        self.motion_extra_hits = int(
-            self.get_parameter("motion_extra_hits").value
+        self.confirm_hits = int(
+            self.get_parameter("confirm_hits").value
         )
         self.max_missed_frames = int(
             self.get_parameter("max_missed_frames").value
         )
-        self.noisy_max_missed_frames = int(
-            self.get_parameter("noisy_max_missed_frames").value
-        )
         self.immediate_conf_threshold = float(
             self.get_parameter("immediate_conf_threshold").value
-        )
-        self.motion_threshold = float(
-            self.get_parameter("motion_threshold").value
-        )
-        self.motion_diff_threshold = int(
-            self.get_parameter("motion_diff_threshold").value
-        )
-        self.motion_conf_boost = float(
-            self.get_parameter("motion_conf_boost").value
         )
 
         if self.device != "cpu" and not torch.cuda.is_available():
@@ -188,7 +141,6 @@ class YoloPerceptionNode(Node):
         self.last_frame_bgr = None
         self.last_result_state = None
         self._warmed_up = False
-        self.previous_motion_gray = None
 
         self.model = YOLO(self.model_path)
 
@@ -239,7 +191,7 @@ class YoloPerceptionNode(Node):
         )
 
         self.get_logger().info(
-            "yolo_perception_node l640-v3 started: "
+            "yolo_perception_node l640-v1 started: "
             f"model={self.model_path}, device={self.device}, "
             f"imgsz={self.imgsz}, period={self.analysis_period_sec}s, "
             f"nms_iou={self.iou_threshold}"
@@ -403,10 +355,6 @@ class YoloPerceptionNode(Node):
                 f"image conversion failed: {exc}"
             )
 
-    @staticmethod
-    def _is_noisy_class(class_name: str) -> bool:
-        return class_name in {"tv", "remote", "cell phone", "mouse"}
-
     def _threshold_for(self, class_name: str) -> float:
         if class_name == "person":
             return self.person_conf_threshold
@@ -416,67 +364,7 @@ class YoloPerceptionNode(Node):
             return self.cup_conf_threshold
         if class_name == "chair":
             return self.chair_conf_threshold
-        if class_name == "tv":
-            return self.tv_conf_threshold
-        if class_name == "remote":
-            return self.remote_conf_threshold
-        if class_name == "cell phone":
-            return self.cell_phone_conf_threshold
-        if class_name == "mouse":
-            return self.mouse_conf_threshold
-        if class_name == "keyboard":
-            return self.keyboard_conf_threshold
-        if class_name == "laptop":
-            return self.laptop_conf_threshold
         return self.default_conf_threshold
-
-    def _required_hits_for(
-        self,
-        class_name: str,
-        scene_motion: bool,
-    ) -> int:
-        if class_name == "person":
-            return 1
-        if class_name in {"cat", "dog", "cup", "chair", "keyboard", "laptop"}:
-            required = 2
-        elif self._is_noisy_class(class_name):
-            required = 4
-        else:
-            required = self.default_confirm_hits
-
-        if scene_motion and class_name != "person":
-            required += self.motion_extra_hits
-        return required
-
-    def _max_missed_for(self, class_name: str) -> int:
-        if self._is_noisy_class(class_name):
-            return self.noisy_max_missed_frames
-        return self.max_missed_frames
-
-    def _can_confirm_immediately(
-        self,
-        class_name: str,
-        confidence: float,
-    ) -> bool:
-        if class_name == "person":
-            return True
-        if self._is_noisy_class(class_name):
-            return False
-        return confidence >= self.immediate_conf_threshold
-
-    def _compute_motion_ratio(self, frame) -> float:
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        gray = cv2.resize(gray, (320, 180), interpolation=cv2.INTER_AREA)
-        gray = cv2.GaussianBlur(gray, (5, 5), 0)
-
-        if self.previous_motion_gray is None:
-            self.previous_motion_gray = gray
-            return 0.0
-
-        difference = cv2.absdiff(gray, self.previous_motion_gray)
-        self.previous_motion_gray = gray
-        changed = difference >= self.motion_diff_threshold
-        return float(changed.mean())
 
     def _warm_up(self, frame) -> None:
         if self._warmed_up:
@@ -507,7 +395,6 @@ class YoloPerceptionNode(Node):
     def _update_tracks(
         self,
         detections: List[Dict[str, Any]],
-        scene_motion: bool,
     ) -> None:
         unmatched_track_ids = set(self.tracks.keys())
         unmatched_detection_indexes = set(range(len(detections)))
@@ -605,23 +492,13 @@ class YoloPerceptionNode(Node):
                 4,
             )
             track["hits"] += 1
-            track["consecutive_hits"] += 1
             track["missed_frames"] = 0
             track["last_seen"] = time.time()
-            track["required_hits"] = max(
-                int(track["required_hits"]),
-                self._required_hits_for(
-                    track["class_name"],
-                    scene_motion,
-                ),
-            )
 
             if (
-                track["consecutive_hits"] >= track["required_hits"]
-                or self._can_confirm_immediately(
-                    track["class_name"],
-                    float(track["confidence"]),
-                )
+                track["hits"] >= self.confirm_hits
+                or track["confidence"] >= self.immediate_conf_threshold
+                or track["class_name"] == "person"
             ):
                 track["confirmed"] = True
 
@@ -633,13 +510,10 @@ class YoloPerceptionNode(Node):
             track_id = self.next_track_id
             self.next_track_id += 1
 
-            required_hits = self._required_hits_for(
-                detection["class_name"],
-                scene_motion,
-            )
-            confirmed = self._can_confirm_immediately(
-                detection["class_name"],
-                float(detection["confidence"]),
+            confirmed = (
+                detection["class_name"] == "person"
+                or detection["confidence"] >= self.immediate_conf_threshold
+                or self.confirm_hits <= 1
             )
 
             self.tracks[track_id] = {
@@ -652,8 +526,6 @@ class YoloPerceptionNode(Node):
                 "size_wh": detection["size_wh"],
                 "velocity_xy": [0.0, 0.0],
                 "hits": 1,
-                "consecutive_hits": 1,
-                "required_hits": required_hits,
                 "missed_frames": 0,
                 "confirmed": confirmed,
                 "first_seen": time.time(),
@@ -663,7 +535,6 @@ class YoloPerceptionNode(Node):
         for track_id in unmatched_track_ids:
             track = self.tracks[track_id]
             track["missed_frames"] += 1
-            track["consecutive_hits"] = 0
             track["velocity_xy"] = [
                 round(float(value) * 0.85, 2)
                 for value in track["velocity_xy"]
@@ -672,8 +543,7 @@ class YoloPerceptionNode(Node):
         expired = [
             track_id
             for track_id, track in self.tracks.items()
-            if track["missed_frames"]
-            > self._max_missed_for(track["class_name"])
+            if track["missed_frames"] > self.max_missed_frames
         ]
         for track_id in expired:
             del self.tracks[track_id]
@@ -695,8 +565,6 @@ class YoloPerceptionNode(Node):
                 "size_wh": track["size_wh"],
                 "velocity_xy": track["velocity_xy"],
                 "hits": track["hits"],
-                "consecutive_hits": track["consecutive_hits"],
-                "required_hits": track["required_hits"],
                 "missed_frames": track["missed_frames"],
                 "temporally_confirmed": True,
             })
@@ -715,8 +583,6 @@ class YoloPerceptionNode(Node):
 
         frame = self.last_frame_bgr.copy()
         height, width = frame.shape[:2]
-        motion_ratio = self._compute_motion_ratio(frame)
-        scene_motion = motion_ratio >= self.motion_threshold
 
         try:
             self._warm_up(frame)
@@ -760,13 +626,7 @@ class YoloPerceptionNode(Node):
                     result.names,
                     class_id,
                 )
-                base_threshold = self._threshold_for(class_name)
-                threshold = base_threshold
-                if scene_motion and self._is_noisy_class(class_name):
-                    threshold = min(
-                        0.95,
-                        threshold + self.motion_conf_boost,
-                    )
+                threshold = self._threshold_for(class_name)
                 bbox = [x1, y1, x2, y2]
                 center_xy, size_wh = self._center_and_size(bbox)
 
@@ -778,7 +638,6 @@ class YoloPerceptionNode(Node):
                         class_name,
                     ),
                     "confidence": round(confidence, 4),
-                    "base_threshold": round(base_threshold, 4),
                     "threshold": round(threshold, 4),
                     "bbox_xyxy": bbox,
                     "center_xy": center_xy,
@@ -797,7 +656,7 @@ class YoloPerceptionNode(Node):
         accepted_raw, suppressed_duplicates = self._suppress_duplicates(
             accepted_raw
         )
-        self._update_tracks(accepted_raw, scene_motion)
+        self._update_tracks(accepted_raw)
         detections = self._stable_detections()
 
         persons: List[Dict[str, Any]] = []
@@ -881,7 +740,7 @@ class YoloPerceptionNode(Node):
             "detector": {
                 "model": self.model_path,
                 "type": "ultralytics_yolo",
-                "version": "l640-v3",
+                "version": "l640-v2",
                 "device": str(self.device),
                 "imgsz": self.imgsz,
                 "inference_conf_threshold": (
@@ -896,13 +755,6 @@ class YoloPerceptionNode(Node):
                 "active_tracks": len(self.tracks),
                 "raw_accepted_detections": len(accepted_raw),
                 "suppressed_duplicates": suppressed_duplicates,
-                "motion_ratio": round(motion_ratio, 4),
-                "scene_motion": scene_motion,
-                "tentative_tracks": sum(
-                    1
-                    for track in self.tracks.values()
-                    if not track["confirmed"]
-                ),
             },
         }
 
@@ -944,9 +796,6 @@ class YoloPerceptionNode(Node):
             f"objects={[obj['class_name'] for obj in objects[:12]]}, "
             f"counts={counts}, "
             f"tracks={len(self.tracks)}, "
-            f"tentative={sum(1 for track in self.tracks.values() if not track['confirmed'])}, "
-            f"motion={motion_ratio:.3f}, "
-            f"scene_motion={scene_motion}, "
             f"suppressed_duplicates={suppressed_duplicates}"
         )
         self.debug_pub.publish(debug_msg)
