@@ -60,6 +60,8 @@ class VoiceManagerNode(Node):
         self.get_logger().info("voice_manager_node started")
 
     def set_state(self, new_state: VoiceState):
+        if self.state == new_state:
+            return
         self.state = new_state
         msg = String()
         msg.data = str(new_state.value)
@@ -80,11 +82,25 @@ class VoiceManagerNode(Node):
         self.asr_listen_pub.publish(listen_msg)
 
     def asr_status_cb(self, msg: String):
-        text = (msg.data or "").strip()
+        text = (msg.data or "").strip().lower()
 
         if self.state == VoiceState.LISTENING:
-            if "empty" in text.lower() or "invalid" in text.lower():
-                self.get_logger().info("ASR returned empty/invalid transcript")
+            reset_markers = [
+                "empty",
+                "invalid",
+                "no speech detected",
+                "speech timeout",
+                "listen timeout",
+                "asr failed",
+                "busy",
+            ]
+            if any(marker in text for marker in reset_markers):
+                self.get_logger().info(f"ASR ended without transcript: {text}")
+                self.set_state(VoiceState.IDLE)
+
+        if self.state == VoiceState.THINKING:
+            if "asr failed" in text:
+                self.get_logger().info(f"ASR failed while thinking: {text}")
                 self.set_state(VoiceState.IDLE)
 
     def asr_transcript_cb(self, msg: String):
@@ -105,7 +121,6 @@ class VoiceManagerNode(Node):
         self.last_answer = text
 
         if self.state == VoiceState.THINKING:
-            # Ждём, что TTS начнёт говорить и сам переведёт нас в SPEAKING через /voice_tts/status
             self.get_logger().info(f"answer received: {text}")
 
     def tts_status_cb(self, msg: String):

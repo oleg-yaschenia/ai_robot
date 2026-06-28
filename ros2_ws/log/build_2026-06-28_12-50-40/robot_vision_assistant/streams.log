@@ -1,0 +1,31 @@
+[2.495s] Invoking command in '/home/warxen/ai_robot/ros2_ws/src/robot_vision_assistant': NX_CONNECTION=192.168.1.126 2425 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_vision_assistant/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_vision_assistant build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_vision_assistant/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_vision_assistant/install.log --single-version-externally-managed install_data
+[3.014s] running egg_info
+[3.016s] writing ../../build/robot_vision_assistant/robot_vision_assistant.egg-info/PKG-INFO
+[3.016s] writing dependency_links to ../../build/robot_vision_assistant/robot_vision_assistant.egg-info/dependency_links.txt
+[3.017s] writing entry points to ../../build/robot_vision_assistant/robot_vision_assistant.egg-info/entry_points.txt
+[3.017s] writing requirements to ../../build/robot_vision_assistant/robot_vision_assistant.egg-info/requires.txt
+[3.017s] writing top-level names to ../../build/robot_vision_assistant/robot_vision_assistant.egg-info/top_level.txt
+[3.022s] reading manifest file '../../build/robot_vision_assistant/robot_vision_assistant.egg-info/SOURCES.txt'
+[3.023s] writing manifest file '../../build/robot_vision_assistant/robot_vision_assistant.egg-info/SOURCES.txt'
+[3.024s] running build
+[3.024s] running build_py
+[3.024s] copying robot_vision_assistant/voice_led_bridge_node.py -> /home/warxen/ai_robot/ros2_ws/build/robot_vision_assistant/build/lib/robot_vision_assistant
+[3.025s] running install
+[3.026s] running install_lib
+[3.028s] copying /home/warxen/ai_robot/ros2_ws/build/robot_vision_assistant/build/lib/robot_vision_assistant/voice_led_bridge_node.py -> /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant
+[3.030s] byte-compiling /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant/voice_led_bridge_node.py to voice_led_bridge_node.cpython-310.pyc
+[3.032s] running install_data
+[3.032s] copying launch/voice_led_bridge.launch.py -> /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/share/robot_vision_assistant/launch
+[3.033s] running install_egg_info
+[3.037s] removing '/home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant-0.0.1-py3.10.egg-info' (and everything under it)
+[3.039s] Copying ../../build/robot_vision_assistant/robot_vision_assistant.egg-info to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant-0.0.1-py3.10.egg-info
+[3.040s] running install_scripts
+[3.086s] Installing asr_node script to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant
+[3.086s] Installing local_perception_node script to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant
+[3.086s] Installing tts_node script to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant
+[3.087s] Installing vision_assistant_node script to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant
+[3.087s] Installing voice_led_bridge_node script to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant
+[3.087s] Installing voice_manager_node script to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant
+[3.087s] Installing yolo_perception_node script to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant
+[3.088s] writing list of installed files to '/home/warxen/ai_robot/ros2_ws/build/robot_vision_assistant/install.log'
+[3.164s] Invoked command in '/home/warxen/ai_robot/ros2_ws/src/robot_vision_assistant' returned '0': NX_CONNECTION=192.168.1.126 2425 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_vision_assistant/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_vision_assistant build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_vision_assistant/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_vision_assistant/install.log --single-version-externally-managed install_data

@@ -1,0 +1,28 @@
+[2.538s] Invoking command in '/home/warxen/ai_robot/ros2_ws/src/robot_esp32_bridge': NX_CONNECTION=192.168.1.126 2425 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_esp32_bridge build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/install.log --single-version-externally-managed install_data
+[3.061s] running egg_info
+[3.062s] writing ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/PKG-INFO
+[3.063s] writing dependency_links to ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/dependency_links.txt
+[3.063s] writing entry points to ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/entry_points.txt
+[3.064s] writing requirements to ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/requires.txt
+[3.064s] writing top-level names to ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/top_level.txt
+[3.068s] reading manifest file '../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/SOURCES.txt'
+[3.071s] writing manifest file '../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/SOURCES.txt'
+[3.071s] running build
+[3.071s] running build_py
+[3.072s] running install
+[3.073s] running install_lib
+[3.077s] running install_data
+[3.077s] copying launch/head_behavior.launch.py -> /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/launch
+[3.077s] running install_egg_info
+[3.081s] removing '/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge-0.0.1-py3.10.egg-info' (and everything under it)
+[3.082s] Copying ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge-0.0.1-py3.10.egg-info
+[3.084s] running install_scripts
+[3.133s] Installing drive_bridge_node script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge
+[3.135s] Installing esp32_bridge_node script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge
+[3.136s] Installing head_demo_publisher script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge
+[3.136s] Installing head_state_manager script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge
+[3.136s] Installing neck_bridge_node script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge
+[3.136s] Installing neck_demo_publisher script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge
+[3.136s] Installing neck_state_manager script to /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/robot_esp32_bridge
+[3.137s] writing list of installed files to '/home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/install.log'
+[3.224s] Invoked command in '/home/warxen/ai_robot/ros2_ws/src/robot_esp32_bridge' returned '0': NX_CONNECTION=192.168.1.126 2425 192.168.1.127 4000 PYTHONPATH=/home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_esp32_bridge build --build-base /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/build install --record /home/warxen/ai_robot/ros2_ws/build/robot_esp32_bridge/install.log --single-version-externally-managed install_data

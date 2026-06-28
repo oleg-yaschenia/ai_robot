@@ -11,6 +11,7 @@ setup.py
 launch/audio_test.launch.py
 launch/base_sensors.launch.py
 launch/camera_only.launch.py
+launch/robot_assistant_full.launch.py
 launch/robot_base.launch.py
 resource/robot_bringup
 robot_bringup/__init__.py

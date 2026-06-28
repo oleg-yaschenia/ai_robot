@@ -9,6 +9,7 @@ setup.py
 ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/top_level.txt
 ../../build/robot_esp32_bridge/robot_esp32_bridge.egg-info/zip-safe
 launch/drive_bridge.launch.py
+launch/head_behavior.launch.py
 resource/robot_esp32_bridge
 robot_esp32_bridge/__init__.py
 robot_esp32_bridge/drive_bridge_node.py

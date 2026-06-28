@@ -20,6 +20,7 @@
 /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge/__pycache__/robot_drive.cpython-310.pyc
 /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/ament_index/resource_index/packages/robot_esp32_bridge
 /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/package.xml
+/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/launch/head_behavior.launch.py
 /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/share/robot_esp32_bridge/launch/drive_bridge.launch.py
 /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge-0.0.1-py3.10.egg-info/entry_points.txt
 /home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge/lib/python3.10/site-packages/robot_esp32_bridge-0.0.1-py3.10.egg-info/dependency_links.txt

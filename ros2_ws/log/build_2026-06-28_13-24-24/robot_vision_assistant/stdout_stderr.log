@@ -1,0 +1,28 @@
+running egg_info
+writing ../../build/robot_vision_assistant/robot_vision_assistant.egg-info/PKG-INFO
+writing dependency_links to ../../build/robot_vision_assistant/robot_vision_assistant.egg-info/dependency_links.txt
+writing entry points to ../../build/robot_vision_assistant/robot_vision_assistant.egg-info/entry_points.txt
+writing requirements to ../../build/robot_vision_assistant/robot_vision_assistant.egg-info/requires.txt
+writing top-level names to ../../build/robot_vision_assistant/robot_vision_assistant.egg-info/top_level.txt
+reading manifest file '../../build/robot_vision_assistant/robot_vision_assistant.egg-info/SOURCES.txt'
+writing manifest file '../../build/robot_vision_assistant/robot_vision_assistant.egg-info/SOURCES.txt'
+running build
+running build_py
+copying robot_vision_assistant/vision_assistant_node.py -> /home/warxen/ai_robot/ros2_ws/build/robot_vision_assistant/build/lib/robot_vision_assistant
+running install
+running install_lib
+copying /home/warxen/ai_robot/ros2_ws/build/robot_vision_assistant/build/lib/robot_vision_assistant/vision_assistant_node.py -> /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant
+byte-compiling /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant/vision_assistant_node.py to vision_assistant_node.cpython-310.pyc
+running install_data
+running install_egg_info
+removing '/home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant-0.0.1-py3.10.egg-info' (and everything under it)
+Copying ../../build/robot_vision_assistant/robot_vision_assistant.egg-info to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant-0.0.1-py3.10.egg-info
+running install_scripts
+Installing asr_node script to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant
+Installing local_perception_node script to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant
+Installing tts_node script to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant
+Installing vision_assistant_node script to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant
+Installing voice_led_bridge_node script to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant
+Installing voice_manager_node script to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant
+Installing yolo_perception_node script to /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant
+writing list of installed files to '/home/warxen/ai_robot/ros2_ws/build/robot_vision_assistant/install.log'

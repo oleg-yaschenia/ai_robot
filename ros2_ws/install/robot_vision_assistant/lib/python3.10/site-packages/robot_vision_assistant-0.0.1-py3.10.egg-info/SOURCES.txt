@@ -13,6 +13,7 @@ launch/local_assistant.launch.py
 launch/local_perception.launch.py
 launch/tts.launch.py
 launch/vision_assistant.launch.py
+launch/voice_led_bridge.launch.py
 launch/voice_manager.launch.py
 launch/yolo_perception.launch.py
 resource/robot_vision_assistant
@@ -22,6 +23,7 @@ robot_vision_assistant/local_perception_node.py
 robot_vision_assistant/memory_store.py
 robot_vision_assistant/tts_node.py
 robot_vision_assistant/vision_assistant_node.py
+robot_vision_assistant/voice_led_bridge_node.py
 robot_vision_assistant/voice_manager_node.py
 robot_vision_assistant/yolo_perception_node.py
 test/test_copyright.py
