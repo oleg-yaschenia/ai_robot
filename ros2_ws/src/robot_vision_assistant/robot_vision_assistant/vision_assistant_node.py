@@ -42,23 +42,26 @@ class VisionAssistantNode(Node):
 
         self.last_frame_bgr = None
         self.last_scene_summary = "У меня пока нет данных о сцене."
-        self.last_state = {}
-        self.prev_state = {}
+        self.last_interpreted = {}
+        self.last_raw_state = {}
 
         self.last_question = ""
         self.last_answer = ""
         self.last_focus_label = None
-        self.last_focus_count = None
-        self.last_intent = None
+        self.last_focus_entity_id = None
+        self.last_focus_kind = None
 
         self.image_sub = self.create_subscription(
             Image, self.image_topic, self.image_cb, 10
         )
         self.scene_summary_sub = self.create_subscription(
-            String, "/perception/scene_summary", self.scene_summary_cb, 10
+            String, "/scene/interpreted_summary", self.scene_summary_cb, 10
         )
-        self.state_sub = self.create_subscription(
-            String, "/perception/state_json", self.state_json_cb, 10
+        self.interpreted_sub = self.create_subscription(
+            String, "/scene/interpreted_json", self.interpreted_cb, 10
+        )
+        self.raw_state_sub = self.create_subscription(
+            String, "/perception/state_json", self.raw_state_cb, 10
         )
         self.query_sub = self.create_subscription(
             String, "/vision_assistant/query", self.query_cb, 10
@@ -117,104 +120,85 @@ class VisionAssistantNode(Node):
     def scene_summary_cb(self, msg: String):
         self.last_scene_summary = msg.data.strip() if msg.data else "Нет данных сцены."
 
-    def state_json_cb(self, msg: String):
+    def interpreted_cb(self, msg: String):
         try:
-            new_state = json.loads(msg.data)
-            self.prev_state = self.last_state
-            self.last_state = new_state
+            self.last_interpreted = json.loads(msg.data)
         except Exception as e:
-            self.get_logger().warning(f"failed to parse state_json: {e}")
+            self.get_logger().warning(f"failed to parse interpreted_json: {e}")
+
+    def raw_state_cb(self, msg: String):
+        try:
+            self.last_raw_state = json.loads(msg.data)
+        except Exception as e:
+            self.get_logger().warning(f"failed to parse raw perception state_json: {e}")
 
     def query_cb(self, msg: String):
         question = msg.data.strip()
         if not question:
             return
 
-        answer = self.build_answer_from_perception(question)
+        answer = self.build_answer(question)
         self.publish_answer(answer)
 
         self.last_question = question
         self.last_answer = answer
-
         self.memory.add_interaction(self.mode, question, answer, "")
 
     # ---------- helpers ----------
 
-    def get_counts(self):
-        return self.last_state.get("counts", {}) if isinstance(self.last_state, dict) else {}
+    def qnorm(self, q: str) -> str:
+        return q.strip().lower().replace("ё", "е")
 
-    def get_objects(self):
-        return self.last_state.get("objects", []) if isinstance(self.last_state, dict) else []
+    def counts(self):
+        return self.last_interpreted.get("counts", self.last_raw_state.get("counts", {}))
 
-    def get_persons(self):
-        return self.last_state.get("persons", []) if isinstance(self.last_state, dict) else []
+    def persons(self):
+        return self.last_interpreted.get("persons", [])
 
-    def get_scene_flags(self):
-        return self.last_state.get("scene_flags", {}) if isinstance(self.last_state, dict) else {}
+    def objects(self):
+        return self.last_interpreted.get("objects", [])
 
-    def get_image_size(self):
-        image_size = self.last_state.get("image_size", {}) if isinstance(self.last_state, dict) else {}
-        w = int(image_size.get("width", 0) or 0)
-        h = int(image_size.get("height", 0) or 0)
-        return w, h
+    def salient(self):
+        return self.last_interpreted.get("salient_entities", [])
 
-    def normalize_question(self, question: str) -> str:
-        q = question.strip().lower()
-        q = q.replace("ё", "е")
-        return q
+    def changes(self):
+        return self.last_interpreted.get("changes", {})
 
-    def is_followup_question(self, q: str) -> bool:
-        followups = [
-            "а где",
-            "а где именно",
-            "где именно",
-            "а сколько",
-            "сколько их",
-            "а еще",
-            "еще",
-            "подробнее",
-            "что еще",
-            "а что еще",
-            "кто именно",
-            "какой именно",
-        ]
-        return any(token in q for token in followups)
+    def relations(self):
+        return self.last_interpreted.get("relations", [])
 
-    def classify_intent(self, q: str) -> str:
-        if self.is_followup_question(q):
-            return "followup"
+    def primary_person(self):
+        return self.last_interpreted.get("primary_person")
 
-        if "что измен" in q:
-            return "change"
+    def nearest_entity(self):
+        return self.last_interpreted.get("nearest_entity")
 
-        if "где" in q or "слева" in q or "справа" in q or "в центре" in q:
-            return "location"
+    def person_context(self):
+        return self.last_interpreted.get("person_context", {})
 
-        if "сколько" in q:
-            return "count"
+    def all_entities(self):
+        return self.persons() + self.objects()
 
-        if "есть ли человек" in q or "кто-то есть" in q or "есть человек" in q:
-            return "person_presence"
+    def ru_label(self, label: str) -> str:
+        return {
+            "person": "человек",
+            "cat": "кот",
+            "dog": "собака",
+            "cell phone": "телефон",
+            "laptop": "ноутбук",
+            "chair": "стул",
+            "bottle": "бутылка",
+            "cup": "чашка",
+        }.get(label, label)
 
-        if "есть ли кот" in q or "есть ли кошк" in q:
-            return "cat_presence"
+    def find_entity_by_id(self, entity_id: str):
+        for ent in self.all_entities():
+            if ent.get("entity_id") == entity_id:
+                return ent
+        return None
 
-        if "есть ли собак" in q:
-            return "dog_presence"
-
-        if "питом" in q:
-            return "pet_presence"
-
-        if "какие предметы" in q or "что находится" in q or "что за предмет" in q:
-            return "object_list"
-
-        if "что ты видишь" in q or "что видишь" in q or "что происходит" in q:
-            return "scene_overview"
-
-        return "generic"
-
-    def object_label_from_question(self, q: str):
-        label_map = {
+    def find_label_from_question(self, q: str):
+        mapping = {
             "человек": "person",
             "люд": "person",
             "кот": "cat",
@@ -228,308 +212,276 @@ class VisionAssistantNode(Node):
             "чаш": "cup",
             "круж": "cup",
         }
-        for token, label in label_map.items():
+        for token, label in mapping.items():
             if token in q:
                 return label
-        return None
+        return self.last_focus_label
 
-    def ru_label(self, label: str, count: int = 1) -> str:
-        mapping = {
-            "person": "человек" if count == 1 else "человек",
-            "cat": "кот" if count == 1 else "коты",
-            "dog": "собака" if count == 1 else "собаки",
-            "cell phone": "телефон" if count == 1 else "телефоны",
-            "laptop": "ноутбук" if count == 1 else "ноутбуки",
-            "chair": "стул" if count == 1 else "стулья",
-            "bottle": "бутылка" if count == 1 else "бутылки",
-            "cup": "чашка" if count == 1 else "чашки",
-        }
-        return mapping.get(label, label)
+    def entities_by_label(self, label: str):
+        if not label:
+            return []
+        return [e for e in self.all_entities() if e.get("class_name") == label]
 
-    def all_detected_labels(self):
-        counts = self.get_counts()
-        labels = []
-        for label, cnt in counts.items():
-            if cnt > 0:
-                labels.append(label)
-        return labels
+    def classify(self, q: str) -> str:
+        if "что измен" in q:
+            return "change"
 
-    def get_entities_by_label(self, label: str):
-        if label == "person":
-            return self.get_persons()
+        if "кто ближе" in q or "что ближе" in q or "кто ближе к камере" in q or "что ближе к камере" in q:
+            return "nearest"
 
-        return [obj for obj in self.get_objects() if obj.get("class_name") == label]
+        if "рядом" in q or "возле" in q or "около" in q:
+            return "nearby"
 
-    def choose_focus_label(self, q: str):
-        explicit = self.object_label_from_question(q)
-        if explicit:
-            return explicit
+        if "слева" in q or "справа" in q:
+            return "side_query"
 
-        if self.last_focus_label:
-            return self.last_focus_label
+        if "где" in q:
+            return "location"
 
-        labels = self.all_detected_labels()
-        if labels:
-            return labels[0]
+        if "сколько" in q:
+            return "count"
 
-        return None
+        if "есть ли человек" in q or "есть человек" in q:
+            return "person_presence"
 
-    def center_to_text(self, cx: int, cy: int):
-        w, h = self.get_image_size()
-        if w <= 0 or h <= 0:
-            return "в кадре"
+        if "какие предметы" in q or "какие объекты" in q:
+            return "object_list"
 
-        x_zone = cx / w
-        y_zone = cy / h
+        if "что ты видишь" in q or "что видишь" in q or "что происходит" in q or "опиши сцену" in q:
+            return "scene_overview"
 
-        if x_zone < 0.33:
-            x_text = "слева"
-        elif x_zone > 0.66:
-            x_text = "справа"
-        else:
-            x_text = "по центру"
+        if "а где" in q or "где именно" in q or "а сколько" in q or "сколько их" in q or "а еще" in q or "у него" in q or "рядом с ним" in q:
+            return "followup"
 
-        if y_zone < 0.33:
-            y_text = "вверху"
-        elif y_zone > 0.66:
-            y_text = "внизу"
-        else:
-            y_text = "по вертикали ближе к центру"
+        return "scene_overview"
 
-        if x_text == "по центру":
-            return y_text if y_text != "по вертикали ближе к центру" else "по центру"
-        if y_text == "по вертикали ближе к центру":
-            return x_text
-        return f"{x_text} {y_text}"
+    # ---------- answer builders ----------
 
-    def size_to_distance_text(self, size_wh):
-        try:
-            bw, bh = size_wh
-            area = bw * bh
-            if area > 160000:
-                return "довольно близко"
-            if area > 60000:
-                return "на среднем расстоянии"
-            return "дальше от камеры"
-        except Exception:
-            return ""
-
-    def build_scene_overview(self):
-        persons = self.get_persons()
-        objects = self.get_objects()
-        counts = self.get_counts()
-
-        person_count = len(persons)
-        object_labels = []
-        for obj in objects:
-            name = obj.get("class_name")
-            if name and name not in object_labels:
-                object_labels.append(name)
-
-        parts = []
-
-        if person_count > 0:
-            parts.append(f"Я вижу {person_count} человек.")
-        else:
-            parts.append("Сейчас людей в кадре нет.")
-
-        if object_labels:
-            ru_names = [self.ru_label(name) for name in object_labels[:5]]
-            parts.append("Также вижу: " + ", ".join(ru_names) + ".")
-        else:
-            parts.append("Других уверенно распознанных предметов сейчас немного или нет.")
-
-        return " ".join(parts)
+    def answer_scene_overview(self):
+        summary = self.last_scene_summary or "У меня пока нет данных о сцене."
+        if self.salient():
+            self.last_focus_entity_id = self.salient()[0].get("entity_id")
+            self.last_focus_label = self.salient()[0].get("class_name")
+            self.last_focus_kind = "entity"
+        return summary
 
     def answer_person_presence(self):
-        person_present = bool(self.get_scene_flags().get("person_present", False))
-        person_count = int(self.get_counts().get("person", len(self.get_persons())))
-
+        count = int(self.counts().get("person", len(self.persons())))
         self.last_focus_label = "person"
-        self.last_focus_count = person_count
-        self.last_intent = "person_presence"
-
-        if person_present:
-            return f"Да, я вижу человека. Количество: {person_count}."
-        return "Нет, сейчас человека в кадре не видно."
-
-    def answer_cat_presence(self):
-        cat_count = int(self.get_counts().get("cat", 0))
-        self.last_focus_label = "cat"
-        self.last_focus_count = cat_count
-        self.last_intent = "cat_presence"
-
-        if cat_count > 0:
-            return f"Да, я вижу кота. Количество: {cat_count}."
-        return "Нет, кота в кадре не видно."
-
-    def answer_dog_presence(self):
-        dog_count = int(self.get_counts().get("dog", 0))
-        self.last_focus_label = "dog"
-        self.last_focus_count = dog_count
-        self.last_intent = "dog_presence"
-
-        if dog_count > 0:
-            return f"Да, я вижу собаку. Количество: {dog_count}."
-        return "Нет, собаки в кадре не видно."
-
-    def answer_pet_presence(self):
-        pet_present = bool(self.get_scene_flags().get("pet_present", False))
-        self.last_focus_label = "cat" if self.get_counts().get("cat", 0) > 0 else "dog"
-        self.last_intent = "pet_presence"
-
-        if pet_present:
-            cat_count = int(self.get_counts().get("cat", 0))
-            dog_count = int(self.get_counts().get("dog", 0))
-            if cat_count > 0 and dog_count > 0:
-                return f"Да, в кадре есть питомцы: котов {cat_count}, собак {dog_count}."
-            if cat_count > 0:
-                return f"Да, я вижу питомца — похоже, это кот. Количество: {cat_count}."
-            if dog_count > 0:
-                return f"Да, я вижу питомца — похоже, это собака. Количество: {dog_count}."
-            return "Да, в кадре есть питомец."
-        return "Нет, питомца в кадре не видно."
+        self.last_focus_kind = "person"
+        if count > 0:
+            primary = self.primary_person()
+            if primary:
+                return (
+                    f"Да, я вижу человека. Количество: {count}. "
+                    f"Главный человек находится {primary.get('position_text', 'в кадре')}."
+                )
+            return f"Да, я вижу человека. Количество: {count}."
+        return "Нет, человека в кадре не видно."
 
     def answer_object_list(self):
-        objects = self.get_objects()
-        if not objects:
+        objs = self.objects()
+        if not objs:
             return "Сейчас я не вижу уверенно распознанных предметов."
 
-        seen = []
-        for obj in objects:
+        names = []
+        for obj in objs:
             label = obj.get("class_name")
-            if label and label not in seen:
-                seen.append(label)
+            if label and label not in names:
+                names.append(label)
 
-        self.last_focus_label = seen[0] if seen else None
-        self.last_intent = "object_list"
+        if names:
+            self.last_focus_label = names[0]
+            self.last_focus_kind = "object"
 
-        ru_names = [self.ru_label(label) for label in seen[:6]]
-        return "Я вижу такие предметы: " + ", ".join(ru_names) + "."
+        return "Я вижу такие предметы: " + ", ".join(self.ru_label(x) for x in names[:6]) + "."
 
     def answer_count(self, q: str):
-        label = self.choose_focus_label(q)
+        label = self.find_label_from_question(q)
         if not label:
             return "Пока не понял, что именно нужно посчитать."
 
-        count = int(self.get_counts().get(label, 0))
+        count = int(self.counts().get(label, 0))
         self.last_focus_label = label
-        self.last_focus_count = count
-        self.last_intent = "count"
-
-        ru_name = self.ru_label(label, count)
-        return f"Сейчас я вижу {count} объект(ов) типа {ru_name}."
+        self.last_focus_kind = "count"
+        return f"Сейчас я вижу {count} объект(ов) типа {self.ru_label(label)}."
 
     def answer_location(self, q: str):
-        label = self.choose_focus_label(q)
+        label = self.find_label_from_question(q)
         if not label:
             return "Я не понял, положение какого объекта вас интересует."
 
-        entities = self.get_entities_by_label(label)
-        if not entities:
+        ents = self.entities_by_label(label)
+        if not ents:
             return f"Сейчас я не вижу объект типа {self.ru_label(label)}."
 
-        target = entities[0]
-        center_xy = target.get("center_xy", [0, 0])
-        size_wh = target.get("size_wh", [0, 0])
-
-        position_text = self.center_to_text(int(center_xy[0]), int(center_xy[1]))
-        distance_text = self.size_to_distance_text(size_wh)
-
+        ent = ents[0]
+        pos = ent.get("position_text", "в кадре")
+        dist = ent.get("distance_hint", "")
         self.last_focus_label = label
-        self.last_focus_count = len(entities)
-        self.last_intent = "location"
+        self.last_focus_entity_id = ent.get("entity_id")
+        self.last_focus_kind = "entity"
 
-        ru_name = self.ru_label(label, len(entities))
-
-        if len(entities) == 1:
-            if distance_text:
-                return f"{ru_name.capitalize()} находится {position_text}, {distance_text}."
-            return f"{ru_name.capitalize()} находится {position_text}."
-
-        return f"Объектов типа {ru_name} несколько. Первый видимый находится {position_text}."
+        if dist:
+            return f"{self.ru_label(label).capitalize()} находится {pos}, {dist}."
+        return f"{self.ru_label(label).capitalize()} находится {pos}."
 
     def answer_change(self):
-        if not self.prev_state:
-            return "У меня пока недостаточно предыдущих данных, чтобы уверенно сказать, что изменилось."
+        ch = self.changes()
+        if not ch or not ch.get("has_changes"):
+            return "Существенных изменений по распознанным объектам я не вижу."
 
-        prev_counts = self.prev_state.get("counts", {})
-        curr_counts = self.get_counts()
+        pieces = []
+        for item in ch.get("count_changes", [])[:4]:
+            pieces.append(f"{self.ru_label(item['label'])}: {item['from']}→{item['to']}")
 
-        changes = []
+        if pieces:
+            return "По сравнению с предыдущим состоянием изменилось следующее: " + ", ".join(pieces) + "."
+        return "Я вижу изменения в сцене, но они небольшие."
 
-        all_labels = sorted(set(prev_counts.keys()) | set(curr_counts.keys()))
-        for label in all_labels:
-            prev_val = int(prev_counts.get(label, 0))
-            curr_val = int(curr_counts.get(label, 0))
-            if prev_val != curr_val:
-                if curr_val > prev_val:
-                    changes.append(f"{self.ru_label(label)}: стало {curr_val}")
-                else:
-                    changes.append(f"{self.ru_label(label)}: стало {curr_val}")
+    def answer_nearest(self, q: str):
+        label = self.find_label_from_question(q)
+        if label:
+            ents = self.entities_by_label(label)
+            if not ents:
+                return f"Сейчас я не вижу объект типа {self.ru_label(label)}."
+            ent = sorted(ents, key=lambda x: x.get("area", 0), reverse=True)[0]
+        else:
+            ent = self.nearest_entity()
 
-        if changes:
-            return "По сравнению с предыдущим состоянием изменилось следующее: " + "; ".join(changes) + "."
+        if not ent:
+            return "Сейчас я не могу определить, что находится ближе всего к камере."
 
-        if self.last_scene_summary:
-            return "Существенных изменений по распознанным объектам не вижу."
-        return "Я не вижу заметных изменений."
+        self.last_focus_label = ent.get("class_name")
+        self.last_focus_entity_id = ent.get("entity_id")
+        self.last_focus_kind = "entity"
+
+        return (
+            f"Ближе всего к камере сейчас {self.ru_label(ent.get('class_name', 'объект'))}, "
+            f"он находится {ent.get('position_text', 'в кадре')}."
+        )
+
+    def answer_side_query(self, q: str):
+        side = "слева" if "слева" in q else "справа"
+        label = self.find_label_from_question(q)
+
+        ents = self.salient() or self.all_entities()
+        if label:
+            ents = [e for e in ents if e.get("class_name") == label]
+
+        matched = [e for e in ents if side in e.get("position_text", "")]
+        if not matched:
+            if label:
+                return f"Сейчас я не вижу объект типа {self.ru_label(label)} {side}."
+            return f"Сейчас у меня нет уверенно распознанных объектов {side}."
+
+        names = []
+        for ent in matched[:4]:
+            nm = self.ru_label(ent.get("class_name", "объект"))
+            if nm not in names:
+                names.append(nm)
+
+        first = matched[0]
+        self.last_focus_label = first.get("class_name")
+        self.last_focus_entity_id = first.get("entity_id")
+        self.last_focus_kind = "entity"
+
+        return f"{side.capitalize()} я вижу: " + ", ".join(names) + "."
+
+    def answer_nearby(self, q: str):
+        # explicit person-related question
+        if "человек" in q or "у него" in q or "рядом с ним" in q:
+            ctx = self.person_context()
+            nearby = ctx.get("nearby_objects", [])
+            if not nearby:
+                return "Рядом с человеком я не вижу уверенно распознанных предметов."
+
+            names = []
+            for obj in nearby:
+                nm = self.ru_label(obj.get("class_name", "объект"))
+                if nm not in names:
+                    names.append(nm)
+
+            first = nearby[0]
+            self.last_focus_label = first.get("class_name")
+            self.last_focus_entity_id = first.get("entity_id")
+            self.last_focus_kind = "entity"
+
+            return "Рядом с человеком видно: " + ", ".join(names[:5]) + "."
+
+        label = self.find_label_from_question(q)
+        if not label:
+            return "Я не понял, рядом с чем именно нужно посмотреть."
+
+        ents = self.entities_by_label(label)
+        if not ents:
+            return f"Сейчас я не вижу объект типа {self.ru_label(label)}."
+
+        anchor = ents[0]
+        anchor_id = anchor.get("entity_id")
+
+        near_rel = [r for r in self.relations() if r.get("subject_id") == anchor_id and r.get("relation") == "near"]
+        if not near_rel:
+            return f"Рядом с {self.ru_label(label)} я не вижу заметных объектов."
+
+        nearby_names = []
+        for rel in near_rel:
+            other = self.find_entity_by_id(rel.get("object_id"))
+            if other:
+                nm = self.ru_label(other.get("class_name", "объект"))
+                if nm not in nearby_names:
+                    nearby_names.append(nm)
+
+        self.last_focus_label = label
+        self.last_focus_entity_id = anchor_id
+        self.last_focus_kind = "entity"
+
+        if not nearby_names:
+            return f"Рядом с {self.ru_label(label)} я не вижу заметных объектов."
+
+        return f"Рядом с {self.ru_label(label)} находится: " + ", ".join(nearby_names[:5]) + "."
 
     def answer_followup(self, q: str):
-        if ("где" in q or "где именно" in q) and self.last_focus_label:
+        if "у него" in q or "рядом с ним" in q:
+            return self.answer_nearby("рядом с человеком")
+
+        if "где" in q:
             return self.answer_location(q)
 
-        if ("сколько" in q or "сколько их" in q) and self.last_focus_label:
+        if "сколько" in q:
             return self.answer_count(q)
 
-        if "еще" in q or "что еще" in q:
+        if "еще" in q:
             return self.answer_object_list()
 
-        if self.last_answer:
-            return f"Уточню по текущей сцене: {self.last_answer}"
+        return self.answer_scene_overview()
 
-        return self.build_scene_overview()
-
-    def build_answer_from_perception(self, question: str) -> str:
-        q = self.normalize_question(question)
-        intent = self.classify_intent(q)
+    def build_answer(self, question: str) -> str:
+        q = self.qnorm(question)
+        intent = self.classify(q)
 
         if intent == "scene_overview":
-            answer = self.build_scene_overview()
-            self.last_intent = intent
-            return answer
-
+            return self.answer_scene_overview()
         if intent == "person_presence":
             return self.answer_person_presence()
-
-        if intent == "cat_presence":
-            return self.answer_cat_presence()
-
-        if intent == "dog_presence":
-            return self.answer_dog_presence()
-
-        if intent == "pet_presence":
-            return self.answer_pet_presence()
-
         if intent == "object_list":
             return self.answer_object_list()
-
         if intent == "count":
             return self.answer_count(q)
-
         if intent == "location":
             return self.answer_location(q)
-
         if intent == "change":
             return self.answer_change()
-
+        if intent == "nearest":
+            return self.answer_nearest(q)
+        if intent == "side_query":
+            return self.answer_side_query(q)
+        if intent == "nearby":
+            return self.answer_nearby(q)
         if intent == "followup":
             return self.answer_followup(q)
 
-        # generic fallback
-        answer = self.build_scene_overview()
-        self.last_intent = "generic"
-        return answer
+        return self.answer_scene_overview()
 
     def destroy_node(self):
         try:

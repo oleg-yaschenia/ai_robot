@@ -21,6 +21,7 @@ robot_vision_assistant/__init__.py
 robot_vision_assistant/asr_node.py
 robot_vision_assistant/local_perception_node.py
 robot_vision_assistant/memory_store.py
+robot_vision_assistant/scene_interpreter_node.py
 robot_vision_assistant/tts_node.py
 robot_vision_assistant/vision_assistant_node.py
 robot_vision_assistant/voice_led_bridge_node.py

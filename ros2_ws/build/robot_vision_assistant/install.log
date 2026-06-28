@@ -1,4 +1,5 @@
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant/asr_node.py
+/home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant/scene_interpreter_node.py
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant/__init__.py
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant/voice_led_bridge_node.py
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant/voice_manager_node.py
@@ -8,6 +9,7 @@
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant/tts_node.py
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant/yolo_perception_node.py
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant/__pycache__/asr_node.cpython-310.pyc
+/home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant/__pycache__/scene_interpreter_node.cpython-310.pyc
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant/__pycache__/__init__.cpython-310.pyc
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant/__pycache__/voice_led_bridge_node.cpython-310.pyc
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant/__pycache__/voice_manager_node.cpython-310.pyc
@@ -35,6 +37,7 @@
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/python3.10/site-packages/robot_vision_assistant-0.0.1-py3.10.egg-info/SOURCES.txt
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant/asr_node
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant/local_perception_node
+/home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant/scene_interpreter_node
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant/tts_node
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant/vision_assistant_node
 /home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant/lib/robot_vision_assistant/voice_led_bridge_node

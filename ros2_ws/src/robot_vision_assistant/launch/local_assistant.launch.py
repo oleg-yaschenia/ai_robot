@@ -20,6 +20,18 @@ def generate_launch_description():
         ),
         Node(
             package="robot_vision_assistant",
+            executable="scene_interpreter_node",
+            name="scene_interpreter_node",
+            output="screen",
+            parameters=[
+                {"input_topic": "/perception/state_json"},
+                {"output_topic": "/scene/interpreted_json"},
+                {"summary_topic": "/scene/interpreted_summary"},
+                {"change_iou_threshold": 0.35},
+            ],
+        ),
+        Node(
+            package="robot_vision_assistant",
             executable="vision_assistant_node",
             name="vision_assistant_node",
             output="screen",
