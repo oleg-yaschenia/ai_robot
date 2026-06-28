@@ -1,4 +1,0 @@
-[console_scripts]
-isaac_vslam_relay_node = robot_camera.isaac_vslam_relay_node:main
-stereo_camera_node = robot_camera.stereo_camera_node:main
-

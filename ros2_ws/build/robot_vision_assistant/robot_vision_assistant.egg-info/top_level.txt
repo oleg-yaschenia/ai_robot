@@ -1,1 +1,0 @@
-robot_vision_assistant

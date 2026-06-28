@@ -2,13 +2,20 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import (
+    EnvironmentVariable,
+    LaunchConfiguration,
+    PathJoinSubstitution,
+)
 from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
     enable_head = LaunchConfiguration("enable_head")
-    enable_head_serial = LaunchConfiguration("enable_head_serial")
+    enable_esp32 = LaunchConfiguration("enable_esp32")
+    serial_port = LaunchConfiguration("serial_port")
+    baud_rate = LaunchConfiguration("baud_rate")
+    project_root = LaunchConfiguration("project_root")
 
     robot_base = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -17,7 +24,12 @@ def generate_launch_description():
                 "launch",
                 "robot_base.launch.py",
             ])
-        )
+        ),
+        launch_arguments={
+            "enable_esp32": enable_esp32,
+            "serial_port": serial_port,
+            "baud_rate": baud_rate,
+        }.items(),
     )
 
     local_assistant = IncludeLaunchDescription(
@@ -27,7 +39,8 @@ def generate_launch_description():
                 "launch",
                 "local_assistant.launch.py",
             ])
-        )
+        ),
+        launch_arguments={"project_root": project_root}.items(),
     )
 
     voice_led_bridge = IncludeLaunchDescription(
@@ -49,11 +62,6 @@ def generate_launch_description():
                 "head_behavior.launch.py",
             ])
         ),
-        launch_arguments={
-            "enable_serial_bridge": enable_head_serial,
-            "serial_port": "/dev/ttyTHS1",
-            "baud_rate": "115200",
-        }.items(),
         condition=IfCondition(enable_head),
     )
 
@@ -61,14 +69,23 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "enable_head",
             default_value="true",
-            description="Enable head behavior and voice LED bridge"
+            description="Enable head behavior and voice LED bridge",
         ),
         DeclareLaunchArgument(
-            "enable_head_serial",
+            "enable_esp32",
             default_value="true",
-            description="Enable esp32 head serial bridge"
+            description="Start the single ESP32 UART owner",
         ),
-
+        DeclareLaunchArgument("serial_port", default_value="/dev/ttyTHS1"),
+        DeclareLaunchArgument("baud_rate", default_value="115200"),
+        DeclareLaunchArgument(
+            "project_root",
+            default_value=EnvironmentVariable(
+                "AI_ROBOT_ROOT",
+                default_value="/home/warxen/ai_robot",
+            ),
+            description="Repository root; may also be set with AI_ROBOT_ROOT",
+        ),
         robot_base,
         local_assistant,
         voice_led_bridge,

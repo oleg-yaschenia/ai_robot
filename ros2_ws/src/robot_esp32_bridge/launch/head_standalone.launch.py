@@ -1,9 +1,3 @@
-"""Compatibility launch file.
-
-The old drive_bridge_node no longer owns UART. This launch now starts the
-single unified ESP32 transport with drive handling enabled.
-"""
-
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -15,7 +9,7 @@ def generate_launch_description():
     serial_port = LaunchConfiguration("serial_port")
     baud_rate = LaunchConfiguration("baud_rate")
 
-    bridge = IncludeLaunchDescription(
+    transport = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([
                 FindPackageShare("robot_esp32_bridge"),
@@ -26,14 +20,25 @@ def generate_launch_description():
         launch_arguments={
             "serial_port": serial_port,
             "baud_rate": baud_rate,
-            "enable_drive": "true",
-            "enable_head": "false",
+            "enable_drive": "false",
+            "enable_head": "true",
             "enable_neck": "false",
         }.items(),
+    )
+
+    behavior = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution([
+                FindPackageShare("robot_esp32_bridge"),
+                "launch",
+                "head_behavior.launch.py",
+            ])
+        )
     )
 
     return LaunchDescription([
         DeclareLaunchArgument("serial_port", default_value="/dev/ttyTHS1"),
         DeclareLaunchArgument("baud_rate", default_value="115200"),
-        bridge,
+        transport,
+        behavior,
     ])

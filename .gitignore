@@ -1,0 +1,33 @@
+# ROS 2 / colcon generated files
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# Python generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Runtime data
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+data/vision_assistant/snapshots/
+data/recordings/
+data/stereo_pairs/
+
+# Temporary audio and local ML weights
+ros2_ws/*.wav
+ros2_ws/*.pt
+
+# Locally built third-party tools and downloaded models
+tools/whisper.cpp/build/
+tools/whisper.cpp/models/*.bin
