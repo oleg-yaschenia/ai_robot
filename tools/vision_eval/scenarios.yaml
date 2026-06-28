@@ -1,0 +1,45 @@
+version: 1
+capture_rule:
+  recommended_frames_per_scenario: 10
+  keep_camera_and_robot_position_stable_within_one_run: true
+  vary_lighting_distance_and_occlusion_between_runs: true
+
+scenarios:
+  people:
+    - person_front_near
+    - person_front_far
+    - person_left
+    - person_right
+    - two_people
+    - person_partially_occluded
+    - person_low_light
+  pets:
+    - cat_near
+    - cat_far
+    - cat_moving
+    - dog_near
+    - dog_far
+    - dog_moving
+  basic_objects:
+    - chair_single
+    - table_single
+    - cup_single
+    - bottle_single
+    - phone_single
+    - laptop_single
+    - door_closed
+    - door_open
+    - keys_small_object
+    - remote_small_object
+    - box_unknown_object
+  interaction:
+    - object_in_hand
+    - pointing_to_near_object
+    - pointing_to_far_object
+    - cluttered_table
+    - object_partially_occluded
+  open_reasoning:
+    - describe_current_activity
+    - identify_shown_object
+    - explain_unusual_scene
+    - identify_most_important_object
