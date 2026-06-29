@@ -31,3 +31,9 @@ ros2_ws/*.pt
 # Locally built third-party tools and downloaded models
 tools/whisper.cpp/build/
 tools/whisper.cpp/models/*.bin
+*.pt
+*.pth
+*.onnx
+*.engine
+*.plan
+*.trt
