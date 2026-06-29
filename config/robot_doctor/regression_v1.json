@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "packages": [
+    "robot_camera",
+    "robot_vision_assistant",
+    "robot_bringup",
+    "robot_audio",
+    "robot_esp32_bridge"
+  ],
+  "python_roots": [
+    "tools/robot_doctor",
+    "ros2_ws/src/robot_camera",
+    "ros2_ws/src/robot_vision_assistant",
+    "ros2_ws/src/robot_bringup",
+    "ros2_ws/src/robot_audio",
+    "ros2_ws/src/robot_esp32_bridge"
+  ],
+  "baseline_path": "config/robot_doctor/baselines/perception_v5.json",
+  "syntax_timeout_sec": 120,
+  "build_timeout_sec": 600,
+  "health_timeout_sec": 120,
+  "baseline_timeout_sec": 120
+}
