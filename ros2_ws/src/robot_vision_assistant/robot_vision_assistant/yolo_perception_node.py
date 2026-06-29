@@ -2,15 +2,24 @@
 
 import json
 import time
-from typing import Any, Dict, List, Tuple, Union
+from collections import deque
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import cv2
+import numpy as np
 import rclpy
 import torch
 from cv_bridge import CvBridge
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import (
+    DurabilityPolicy,
+    HistoryPolicy,
+    QoSProfile,
+    ReliabilityPolicy,
+    qos_profile_sensor_data,
+)
 from sensor_msgs.msg import Image
+from stereo_msgs.msg import DisparityImage
 from std_msgs.msg import Int32, String
 from ultralytics import YOLO
 
@@ -41,7 +50,7 @@ class YoloPerceptionNode(Node):
     def __init__(self) -> None:
         super().__init__("yolo_perception_node")
 
-        self.declare_parameter("image_topic", "/camera/left/image_raw")
+        self.declare_parameter("image_topic", "/camera/right/image_rect")
         self.declare_parameter("model_path", "yolo11l.pt")
         self.declare_parameter("device", "0")
         self.declare_parameter("imgsz", 640)
@@ -82,6 +91,29 @@ class YoloPerceptionNode(Node):
         self.declare_parameter("motion_threshold", 0.035)
         self.declare_parameter("motion_diff_threshold", 22)
         self.declare_parameter("motion_conf_boost", 0.10)
+
+        # Spatial metadata. These are relative image-space estimates,
+        # not calibrated metric distance.
+        self.declare_parameter("horizontal_left_boundary", 0.38)
+        self.declare_parameter("horizontal_right_boundary", 0.62)
+        self.declare_parameter("vertical_upper_boundary", 0.33)
+        self.declare_parameter("vertical_lower_boundary", 0.67)
+
+        # Metric depth from stereo disparity. YOLO must run on the same
+        # rectified physical-left image used as the left input of the
+        # disparity node.
+        self.declare_parameter("depth_enabled", True)
+        self.declare_parameter("depth_topic", "/disparity")
+        self.declare_parameter("depth_max_age_sec", 0.35)
+        self.declare_parameter("depth_min_m", 0.35)
+        self.declare_parameter("depth_max_m", 8.0)
+        self.declare_parameter("depth_roi_scale_x", 0.50)
+        self.declare_parameter("depth_roi_scale_y", 0.50)
+        self.declare_parameter("depth_min_samples", 40)
+        self.declare_parameter("depth_min_valid_ratio", 0.08)
+        self.declare_parameter("depth_max_relative_spread", 0.35)
+        self.declare_parameter("depth_max_absolute_spread_m", 0.35)
+        self.declare_parameter("depth_saturation_margin_px", 1.0)
 
         self.image_topic = str(self.get_parameter("image_topic").value)
         self.model_path = str(self.get_parameter("model_path").value)
@@ -178,6 +210,56 @@ class YoloPerceptionNode(Node):
             self.get_parameter("motion_conf_boost").value
         )
 
+        self.horizontal_left_boundary = float(
+            self.get_parameter("horizontal_left_boundary").value
+        )
+        self.horizontal_right_boundary = float(
+            self.get_parameter("horizontal_right_boundary").value
+        )
+        self.vertical_upper_boundary = float(
+            self.get_parameter("vertical_upper_boundary").value
+        )
+        self.vertical_lower_boundary = float(
+            self.get_parameter("vertical_lower_boundary").value
+        )
+
+        self.depth_enabled = bool(
+            self.get_parameter("depth_enabled").value
+        )
+        self.depth_topic = str(
+            self.get_parameter("depth_topic").value
+        )
+        self.depth_max_age_sec = float(
+            self.get_parameter("depth_max_age_sec").value
+        )
+        self.depth_min_m = float(
+            self.get_parameter("depth_min_m").value
+        )
+        self.depth_max_m = float(
+            self.get_parameter("depth_max_m").value
+        )
+        self.depth_roi_scale_x = float(
+            self.get_parameter("depth_roi_scale_x").value
+        )
+        self.depth_roi_scale_y = float(
+            self.get_parameter("depth_roi_scale_y").value
+        )
+        self.depth_min_samples = int(
+            self.get_parameter("depth_min_samples").value
+        )
+        self.depth_min_valid_ratio = float(
+            self.get_parameter("depth_min_valid_ratio").value
+        )
+        self.depth_max_relative_spread = float(
+            self.get_parameter("depth_max_relative_spread").value
+        )
+        self.depth_max_absolute_spread_m = float(
+            self.get_parameter("depth_max_absolute_spread_m").value
+        )
+        self.depth_saturation_margin_px = float(
+            self.get_parameter("depth_saturation_margin_px").value
+        )
+
         if self.device != "cpu" and not torch.cuda.is_available():
             self.get_logger().warning(
                 "CUDA is unavailable; falling back to CPU"
@@ -186,9 +268,12 @@ class YoloPerceptionNode(Node):
 
         self.bridge = CvBridge()
         self.last_frame_bgr = None
+        self.last_frame_stamp_sec: Optional[float] = None
+        self.last_frame_id = ""
         self.last_result_state = None
         self._warmed_up = False
         self.previous_motion_gray = None
+        self.disparity_frames = deque(maxlen=6)
 
         self.model = YOLO(self.model_path)
 
@@ -200,6 +285,19 @@ class YoloPerceptionNode(Node):
             self.image_topic,
             self.image_cb,
             qos_profile_sensor_data,
+        )
+
+        depth_qos = QoSProfile(
+            history=HistoryPolicy.KEEP_LAST,
+            depth=2,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.VOLATILE,
+        )
+        self.depth_sub = self.create_subscription(
+            DisparityImage,
+            self.depth_topic,
+            self.disparity_cb,
+            depth_qos,
         )
 
         self.person_count_pub = self.create_publisher(
@@ -232,6 +330,11 @@ class YoloPerceptionNode(Node):
             "/perception/candidates_json",
             10,
         )
+        self.target_pub = self.create_publisher(
+            String,
+            "/perception/target_json",
+            10,
+        )
 
         self.timer = self.create_timer(
             self.analysis_period_sec,
@@ -239,7 +342,7 @@ class YoloPerceptionNode(Node):
         )
 
         self.get_logger().info(
-            "yolo_perception_node l640-v3 started: "
+            "yolo_perception_node l640-v5-depth started: "
             f"model={self.model_path}, device={self.device}, "
             f"imgsz={self.imgsz}, period={self.analysis_period_sec}s, "
             f"nms_iou={self.iou_threshold}"
@@ -378,6 +481,233 @@ class YoloPerceptionNode(Node):
 
         return kept, suppressed
 
+    @staticmethod
+    def _stamp_to_sec(stamp) -> float:
+        return float(stamp.sec) + float(stamp.nanosec) * 1e-9
+
+    @staticmethod
+    def _disparity_array(msg: DisparityImage) -> np.ndarray:
+        image = msg.image
+        if image.encoding not in {"32FC1", "32FC"}:
+            raise ValueError(
+                f"expected 32FC1 disparity, got {image.encoding}"
+            )
+        if image.step % 4 != 0:
+            raise ValueError(f"invalid disparity step: {image.step}")
+
+        dtype = np.dtype(">f4" if image.is_bigendian else "<f4")
+        floats_per_row = image.step // 4
+        values = np.frombuffer(image.data, dtype=dtype)
+        values = values.reshape((image.height, floats_per_row))
+        return values[:, : image.width]
+
+    def disparity_cb(self, msg: DisparityImage) -> None:
+        if not self.depth_enabled:
+            return
+
+        try:
+            disparity = self._disparity_array(msg).copy()
+        except Exception as exc:
+            self.get_logger().warning(
+                f"disparity conversion failed: {exc}"
+            )
+            return
+
+        self.disparity_frames.append({
+            "stamp_sec": self._stamp_to_sec(msg.header.stamp),
+            "frame_id": msg.header.frame_id,
+            "array": disparity,
+            "focal_px": float(msg.f),
+            "baseline_m": abs(float(msg.t)),
+            "min_disparity": float(msg.min_disparity),
+            "max_disparity": float(msg.max_disparity),
+        })
+
+    def _nearest_disparity(
+        self,
+        image_stamp_sec: Optional[float],
+    ) -> Optional[Dict[str, Any]]:
+        if (
+            not self.depth_enabled
+            or image_stamp_sec is None
+            or not self.disparity_frames
+        ):
+            return None
+
+        best = min(
+            self.disparity_frames,
+            key=lambda item: abs(
+                float(item["stamp_sec"]) - image_stamp_sec
+            ),
+        )
+        age_sec = abs(float(best["stamp_sec"]) - image_stamp_sec)
+        if age_sec > self.depth_max_age_sec:
+            return None
+
+        selected = dict(best)
+        selected["age_ms"] = age_sec * 1000.0
+        return selected
+
+    @staticmethod
+    def _depth_defaults(status: str) -> Dict[str, Any]:
+        return {
+            "distance_m": None,
+            "distance_valid": False,
+            "depth_source": "stereo_disparity",
+            "depth_confidence": "none",
+            "depth_status": status,
+            "depth_samples": 0,
+            "depth_valid_ratio": 0.0,
+            "depth_p10_m": None,
+            "depth_p90_m": None,
+            "depth_age_ms": None,
+        }
+
+    def _with_metric_depth(
+        self,
+        detection: Dict[str, Any],
+        depth_frame: Optional[Dict[str, Any]],
+        image_width: int,
+        image_height: int,
+    ) -> Dict[str, Any]:
+        enriched = dict(detection)
+        depth = self._depth_defaults("no_matching_depth_frame")
+
+        if int(detection.get("missed_frames", 0)) > 0:
+            depth["depth_status"] = "track_not_visible_now"
+        elif depth_frame is not None:
+            disparity = depth_frame["array"]
+            disp_height, disp_width = disparity.shape[:2]
+
+            scale_x = float(disp_width) / max(float(image_width), 1.0)
+            scale_y = float(disp_height) / max(float(image_height), 1.0)
+
+            x1, y1, x2, y2 = detection["bbox_xyxy"]
+            x1 = max(0, min(disp_width - 1, int(round(x1 * scale_x))))
+            x2 = max(0, min(disp_width, int(round(x2 * scale_x))))
+            y1 = max(0, min(disp_height - 1, int(round(y1 * scale_y))))
+            y2 = max(0, min(disp_height, int(round(y2 * scale_y))))
+
+            box_width = max(1, x2 - x1)
+            box_height = max(1, y2 - y1)
+
+            scale_roi_x = self.depth_roi_scale_x
+            scale_roi_y = self.depth_roi_scale_y
+            if box_width * box_height < 2500:
+                scale_roi_x = max(scale_roi_x, 0.70)
+                scale_roi_y = max(scale_roi_y, 0.70)
+
+            roi_width = max(5, int(round(box_width * scale_roi_x)))
+            roi_height = max(5, int(round(box_height * scale_roi_y)))
+            center_x = int(round((x1 + x2) * 0.5))
+            center_y = int(round((y1 + y2) * 0.5))
+
+            rx1 = max(0, center_x - roi_width // 2)
+            rx2 = min(disp_width, rx1 + roi_width)
+            ry1 = max(0, center_y - roi_height // 2)
+            ry2 = min(disp_height, ry1 + roi_height)
+
+            roi = disparity[ry1:ry2, rx1:rx2]
+            min_disp = float(depth_frame["min_disparity"])
+            max_disp = float(depth_frame["max_disparity"])
+
+            lower_bound = max(0.0, min_disp) + 0.05
+            upper_bound = max_disp - self.depth_saturation_margin_px
+            valid_mask = (
+                np.isfinite(roi)
+                & (roi > lower_bound)
+                & (roi < upper_bound)
+            )
+
+            roi_pixels = int(roi.size)
+            disparities = roi[valid_mask].astype(np.float32)
+            initial_count = int(disparities.size)
+            valid_ratio = (
+                float(initial_count) / float(roi_pixels)
+                if roi_pixels > 0
+                else 0.0
+            )
+
+            depth.update({
+                "depth_age_ms": round(
+                    float(depth_frame.get("age_ms", 0.0)),
+                    1,
+                ),
+                "depth_samples": initial_count,
+                "depth_valid_ratio": round(valid_ratio, 4),
+            })
+
+            focal_px = float(depth_frame["focal_px"])
+            baseline_m = float(depth_frame["baseline_m"])
+
+            if focal_px <= 0.0 or baseline_m <= 0.0:
+                depth["depth_status"] = "invalid_stereo_calibration"
+            elif initial_count < self.depth_min_samples:
+                depth["depth_status"] = "insufficient_samples"
+            elif valid_ratio < self.depth_min_valid_ratio:
+                depth["depth_status"] = "low_valid_ratio"
+            else:
+                depths = focal_px * baseline_m / disparities
+                depths = depths[
+                    np.isfinite(depths)
+                    & (depths >= self.depth_min_m)
+                    & (depths <= self.depth_max_m)
+                ]
+
+                if depths.size < self.depth_min_samples:
+                    depth["depth_status"] = "samples_out_of_range"
+                    depth["depth_samples"] = int(depths.size)
+                else:
+                    distance_m = float(np.median(depths))
+                    p10_m = float(np.percentile(depths, 10))
+                    p90_m = float(np.percentile(depths, 90))
+                    spread_m = max(0.0, p90_m - p10_m)
+                    relative_spread = spread_m / max(distance_m, 0.01)
+                    max_spread = max(
+                        self.depth_max_absolute_spread_m,
+                        self.depth_max_relative_spread * distance_m,
+                    )
+
+                    if spread_m > max_spread:
+                        depth["depth_status"] = "unstable_depth_spread"
+                    else:
+                        if (
+                            valid_ratio >= 0.30
+                            and relative_spread <= 0.15
+                        ):
+                            confidence = "high"
+                        elif (
+                            valid_ratio >= 0.15
+                            and relative_spread <= 0.30
+                        ):
+                            confidence = "medium"
+                        else:
+                            confidence = "low"
+
+                        depth.update({
+                            "distance_m": round(distance_m, 3),
+                            "distance_valid": True,
+                            "depth_confidence": confidence,
+                            "depth_status": "valid",
+                            "depth_samples": int(depths.size),
+                            "depth_p10_m": round(p10_m, 3),
+                            "depth_p90_m": round(p90_m, 3),
+                        })
+
+        enriched.update(depth)
+        spatial = dict(enriched.get("spatial", {}))
+        spatial.update({
+            "metric_distance_available": bool(
+                depth["distance_valid"]
+            ),
+            "distance_m": depth["distance_m"],
+            "depth_source": depth["depth_source"],
+            "depth_confidence": depth["depth_confidence"],
+            "depth_status": depth["depth_status"],
+        })
+        enriched["spatial"] = spatial
+        return enriched
+
     def image_cb(self, msg: Image) -> None:
         try:
             if msg.encoding == "bgr8":
@@ -398,6 +728,10 @@ class YoloPerceptionNode(Node):
                 )
 
             self.last_frame_bgr = frame
+            self.last_frame_stamp_sec = self._stamp_to_sec(
+                msg.header.stamp
+            )
+            self.last_frame_id = msg.header.frame_id
         except Exception as exc:
             self.get_logger().warning(
                 f"image conversion failed: {exc}"
@@ -477,6 +811,226 @@ class YoloPerceptionNode(Node):
         self.previous_motion_gray = gray
         changed = difference >= self.motion_diff_threshold
         return float(changed.mean())
+
+    @staticmethod
+    def _proximity_thresholds(
+        class_name: str,
+    ) -> Tuple[str, float, float]:
+        """Return proxy source and near/medium thresholds.
+
+        The estimate is based only on bounding-box size. It is useful for
+        relative robot behaviour, but it is not a metric distance.
+        """
+        small_objects = {
+            "cup",
+            "bottle",
+            "bowl",
+            "remote",
+            "cell phone",
+            "mouse",
+            "book",
+            "fork",
+            "knife",
+            "spoon",
+        }
+        medium_objects = {
+            "laptop",
+            "keyboard",
+            "backpack",
+            "handbag",
+        }
+
+        if class_name == "person":
+            return "bbox_height_ratio", 0.70, 0.40
+        if class_name in {"cat", "dog"}:
+            return "bbox_height_ratio", 0.38, 0.18
+        if class_name in {"chair", "couch", "dining table", "bed", "tv"}:
+            return "bbox_area_ratio", 0.22, 0.07
+        if class_name in small_objects:
+            return "bbox_area_ratio", 0.035, 0.008
+        if class_name in medium_objects:
+            return "bbox_area_ratio", 0.10, 0.025
+        return "bbox_area_ratio", 0.14, 0.035
+
+    def _with_spatial(
+        self,
+        detection: Dict[str, Any],
+        image_width: int,
+        image_height: int,
+    ) -> Dict[str, Any]:
+        enriched = dict(detection)
+        center_x, center_y = detection["center_xy"]
+        box_width, box_height = detection["size_wh"]
+
+        x_ratio = float(center_x) / max(float(image_width), 1.0)
+        y_ratio = float(center_y) / max(float(image_height), 1.0)
+        width_ratio = float(box_width) / max(float(image_width), 1.0)
+        height_ratio = float(box_height) / max(float(image_height), 1.0)
+        area_ratio = max(0.0, width_ratio * height_ratio)
+
+        if x_ratio < self.horizontal_left_boundary:
+            horizontal = "left"
+        elif x_ratio > self.horizontal_right_boundary:
+            horizontal = "right"
+        else:
+            horizontal = "center"
+
+        if y_ratio < self.vertical_upper_boundary:
+            vertical = "upper"
+        elif y_ratio > self.vertical_lower_boundary:
+            vertical = "lower"
+        else:
+            vertical = "middle"
+
+        proxy_source, near_threshold, medium_threshold = (
+            self._proximity_thresholds(detection["class_name"])
+        )
+        proxy_value = (
+            height_ratio
+            if proxy_source == "bbox_height_ratio"
+            else area_ratio
+        )
+
+        if proxy_value >= near_threshold:
+            proximity = "near"
+            proximity_rank = 3
+        elif proxy_value >= medium_threshold:
+            proximity = "medium"
+            proximity_rank = 2
+        else:
+            proximity = "far"
+            proximity_rank = 1
+
+        offset_x_norm = max(-1.0, min(1.0, 2.0 * x_ratio - 1.0))
+        offset_y_norm = max(-1.0, min(1.0, 2.0 * y_ratio - 1.0))
+
+        enriched["side"] = horizontal
+        enriched["vertical_region"] = vertical
+        enriched["proximity_hint"] = proximity
+        enriched["spatial"] = {
+            "horizontal": horizontal,
+            "vertical": vertical,
+            "offset_x_norm": round(offset_x_norm, 4),
+            "offset_y_norm": round(offset_y_norm, 4),
+            "center_x_ratio": round(x_ratio, 4),
+            "center_y_ratio": round(y_ratio, 4),
+            "width_ratio": round(width_ratio, 4),
+            "height_ratio": round(height_ratio, 4),
+            "area_ratio": round(area_ratio, 5),
+            "proximity": proximity,
+            "proximity_rank": proximity_rank,
+            "proximity_source": proxy_source,
+            "metric_distance_available": False,
+        }
+        return enriched
+
+    @staticmethod
+    def _target_priority(detection: Dict[str, Any]) -> float:
+        class_name = detection["class_name"]
+        semantic_group = detection.get("semantic_group", "")
+
+        if class_name == "person":
+            return 100.0
+        if class_name in {"cat", "dog"}:
+            return 80.0
+        if semantic_group == "container":
+            return 45.0
+        if semantic_group in {"computer", "computer_accessory"}:
+            return 35.0
+        return 20.0
+
+    def _select_primary_target(
+        self,
+        detections: List[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        if not detections:
+            return {}
+
+        visible_now = [
+            detection
+            for detection in detections
+            if int(detection.get("missed_frames", 0)) == 0
+        ]
+        candidates = visible_now or detections
+
+        best = None
+        best_score = float("-inf")
+
+        for detection in candidates:
+            spatial = detection.get("spatial", {})
+            center_score = 1.0 - min(
+                1.0,
+                abs(float(spatial.get("offset_x_norm", 0.0))),
+            )
+            area_score = min(
+                1.0,
+                float(spatial.get("area_ratio", 0.0)) * 8.0,
+            )
+            confidence_score = float(detection.get("confidence", 0.0))
+
+            score = (
+                self._target_priority(detection)
+                + 10.0 * center_score
+                + 5.0 * confidence_score
+                + 5.0 * area_score
+            )
+
+            if score > best_score:
+                best_score = score
+                best = detection
+
+        if best is None:
+            return {}
+
+        return {
+            "track_id": best.get("track_id"),
+            "class_name": best.get("class_name"),
+            "semantic_group": best.get("semantic_group"),
+            "confidence": best.get("confidence"),
+            "bbox_xyxy": best.get("bbox_xyxy"),
+            "center_xy": best.get("center_xy"),
+            "velocity_xy": best.get("velocity_xy"),
+            "side": best.get("side"),
+            "vertical_region": best.get("vertical_region"),
+            "proximity_hint": best.get("proximity_hint"),
+            "distance_m": best.get("distance_m"),
+            "distance_valid": best.get("distance_valid", False),
+            "depth_confidence": best.get("depth_confidence", "none"),
+            "depth_status": best.get("depth_status"),
+            "spatial": best.get("spatial"),
+            "selection_score": round(best_score, 3),
+            "selection_policy": (
+                "person_then_pet_then_salient_object"
+            ),
+        }
+
+    @staticmethod
+    def _spatial_label(detection: Dict[str, Any]) -> str:
+        horizontal_ru = {
+            "left": "слева",
+            "center": "по центру",
+            "right": "справа",
+        }
+        proximity_ru = {
+            "near": "визуально близко",
+            "medium": "на среднем плане",
+            "far": "на дальнем плане",
+        }
+        if detection.get("distance_valid"):
+            distance_text = (
+                f"примерно {float(detection['distance_m']):.1f} м"
+            )
+        else:
+            distance_text = proximity_ru.get(
+                detection.get("proximity_hint"),
+                "",
+            )
+
+        return (
+            f"{detection['class_name']} "
+            f"{horizontal_ru.get(detection.get('side'), '')}, "
+            f"{distance_text}"
+        ).strip(" ,")
 
     def _warm_up(self, frame) -> None:
         if self._warmed_up:
@@ -714,6 +1268,9 @@ class YoloPerceptionNode(Node):
             return
 
         frame = self.last_frame_bgr.copy()
+        frame_stamp_sec = self.last_frame_stamp_sec
+        frame_id = self.last_frame_id
+        depth_frame = self._nearest_disparity(frame_stamp_sec)
         height, width = frame.shape[:2]
         motion_ratio = self._compute_motion_ratio(frame)
         scene_motion = motion_ratio >= self.motion_threshold
@@ -798,7 +1355,72 @@ class YoloPerceptionNode(Node):
             accepted_raw
         )
         self._update_tracks(accepted_raw, scene_motion)
-        detections = self._stable_detections()
+        detections = [
+            self._with_metric_depth(
+                self._with_spatial(detection, width, height),
+                depth_frame,
+                width,
+                height,
+            )
+            for detection in self._stable_detections()
+        ]
+        primary_target = self._select_primary_target(detections)
+
+        visible_for_nearest = [
+            detection
+            for detection in detections
+            if int(detection.get("missed_frames", 0)) == 0
+        ]
+        nearest_hint = {}
+        metric_candidates = [
+            detection
+            for detection in visible_for_nearest
+            if detection.get("distance_valid")
+        ]
+        if metric_candidates:
+            nearest = min(
+                metric_candidates,
+                key=lambda detection: float(detection["distance_m"]),
+            )
+            nearest_hint = {
+                "track_id": nearest.get("track_id"),
+                "class_name": nearest.get("class_name"),
+                "side": nearest.get("side"),
+                "proximity_hint": nearest.get("proximity_hint"),
+                "distance_m": nearest.get("distance_m"),
+                "distance_valid": True,
+                "depth_confidence": nearest.get("depth_confidence"),
+                "spatial": nearest.get("spatial"),
+                "estimated_only": False,
+            }
+        elif visible_for_nearest:
+            nearest = max(
+                visible_for_nearest,
+                key=lambda detection: (
+                    int(
+                        detection.get("spatial", {}).get(
+                            "proximity_rank",
+                            0,
+                        )
+                    ),
+                    float(
+                        detection.get("spatial", {}).get(
+                            "area_ratio",
+                            0.0,
+                        )
+                    ),
+                ),
+            )
+            nearest_hint = {
+                "track_id": nearest.get("track_id"),
+                "class_name": nearest.get("class_name"),
+                "side": nearest.get("side"),
+                "proximity_hint": nearest.get("proximity_hint"),
+                "distance_m": None,
+                "distance_valid": False,
+                "spatial": nearest.get("spatial"),
+                "estimated_only": True,
+            }
 
         persons: List[Dict[str, Any]] = []
         objects: List[Dict[str, Any]] = []
@@ -839,6 +1461,15 @@ class YoloPerceptionNode(Node):
             obj["class_name"]
             for obj in objects[:8]
         ]
+        spatial_items = [
+            self._spatial_label(detection)
+            for detection in detections[:6]
+        ]
+        spatial_summary = (
+            "; ".join(spatial_items)
+            if spatial_items
+            else "Подтверждённых объектов нет."
+        )
 
         if person_present and top_objects:
             scene_summary = (
@@ -863,7 +1494,7 @@ class YoloPerceptionNode(Node):
 
         state = {
             "timestamp": time.time(),
-            "frame_id": "camera_left_optical_frame",
+            "frame_id": frame_id or "camera_right_optical_frame",
             "image_size": {
                 "width": width,
                 "height": height,
@@ -878,10 +1509,37 @@ class YoloPerceptionNode(Node):
                 "pet_present": pet_present,
             },
             "scene_summary": scene_summary,
+            "spatial_summary": spatial_summary,
+            "primary_target": primary_target,
+            "nearest_hint": nearest_hint,
+            "spatial_estimation": {
+                "metric_distance_available": any(
+                    detection.get("distance_valid")
+                    for detection in detections
+                ),
+                "metric_detection_count": sum(
+                    1
+                    for detection in detections
+                    if detection.get("distance_valid")
+                ),
+                "distance_method": "stereo_disparity_inner_bbox_median",
+                "depth_topic": self.depth_topic,
+                "depth_frame_available": depth_frame is not None,
+                "depth_age_ms": (
+                    round(float(depth_frame.get("age_ms", 0.0)), 1)
+                    if depth_frame is not None
+                    else None
+                ),
+                "fallback_method": "class_aware_bbox_size_proxy",
+                "note": (
+                    "distance_m is metric stereo depth when valid; "
+                    "near/medium/far remains a visual fallback"
+                ),
+            },
             "detector": {
                 "model": self.model_path,
                 "type": "ultralytics_yolo",
-                "version": "l640-v3",
+                "version": "l640-v5-depth",
                 "device": str(self.device),
                 "imgsz": self.imgsz,
                 "inference_conf_threshold": (
@@ -937,6 +1595,13 @@ class YoloPerceptionNode(Node):
         )
         self.candidates_pub.publish(candidates_msg)
 
+        target_msg = String()
+        target_msg.data = json.dumps(
+            primary_target,
+            ensure_ascii=False,
+        )
+        self.target_pub.publish(target_msg)
+
         debug_msg = String()
         debug_msg.data = (
             f"latency_ms={total_latency_ms:.1f}, "
@@ -947,7 +1612,15 @@ class YoloPerceptionNode(Node):
             f"tentative={sum(1 for track in self.tracks.values() if not track['confirmed'])}, "
             f"motion={motion_ratio:.3f}, "
             f"scene_motion={scene_motion}, "
-            f"suppressed_duplicates={suppressed_duplicates}"
+            f"suppressed_duplicates={suppressed_duplicates}, "
+            f"depth_valid={sum(1 for detection in detections if detection.get('distance_valid'))}/"
+            f"{len(detections)}, "
+            f"depth_age_ms={(round(float(depth_frame.get('age_ms', 0.0)), 1) if depth_frame is not None else 'none')}, "
+            f"target={primary_target.get('class_name', 'none')}#"
+            f"{primary_target.get('track_id', '-')}:"
+            f"{primary_target.get('side', '-')}/"
+            f"{primary_target.get('proximity_hint', '-')}/"
+            f"{primary_target.get('distance_m', '-') }m"
         )
         self.debug_pub.publish(debug_msg)
 
