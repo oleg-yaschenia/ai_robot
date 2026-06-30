@@ -1,4 +1,4 @@
-# Configuration Review Agent v1.1
+# Configuration Review Agent v1.2
 
 Read-only deterministic review of ROS 2 launch and configuration files.
 
@@ -36,7 +36,7 @@ python3 \
 Expected:
 
 ```text
-Self-test: 5/5 passed
+Self-test: 7/7 passed
 ```
 
 ## Run
@@ -60,3 +60,10 @@ Exit codes:
 - excludes historical baseline snapshots from portability checks;
 - resolves literal suffixes inside `PathJoinSubstitution`;
 - checks relative model references under both repository root and `ros2_ws`.
+
+## v1.2
+
+- excludes the analyzer's own rule file from scanning;
+- understands pathlib expressions such as
+  `project_root / "calib" / "stereo" / "left.yaml"`;
+- prevents path fragments from being reported as missing files.

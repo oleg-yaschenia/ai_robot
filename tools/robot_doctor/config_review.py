@@ -39,7 +39,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
-VERSION = "configuration-review-v1.1"
+VERSION = "configuration-review-v1.2"
 
 
 @dataclass
@@ -323,6 +323,44 @@ def _literal_pathjoin_candidates(
     return handled, candidates
 
 
+def _literal_path_expression_candidates(
+    repo_root: Path,
+    node: ast.AST,
+) -> tuple[set[int], list[Path]]:
+    """
+    Resolve literal suffixes from pathlib-style expressions such as:
+
+        project_root / "calib" / "stereo" / "left.yaml"
+
+    The dynamic root expression is ignored. Literal components are joined
+    against known repository roots.
+    """
+    handled: set[int] = set()
+    components: list[str] = []
+
+    def visit(current: ast.AST) -> None:
+        if isinstance(current, ast.BinOp) and isinstance(current.op, ast.Div):
+            visit(current.left)
+            visit(current.right)
+            return
+        if isinstance(current, ast.Constant) and isinstance(current.value, str):
+            handled.add(id(current))
+            components.append(current.value)
+
+    visit(node)
+
+    if not components:
+        return handled, []
+
+    suffix = Path(*components)
+    candidates = [
+        repo_root / suffix,
+        repo_root / "ros2_ws" / suffix,
+        repo_root / "data" / suffix,
+    ]
+    return handled, candidates
+
+
 def parse_python_launch(
     repo_root: Path,
     path: Path,
@@ -439,6 +477,40 @@ def parse_python_launch(
                 "PathJoinSubstitution target was not found under known project roots",
                 target.value,
                 "Verify the joined path or the LaunchConfiguration default used as its root.",
+            )
+
+    # pathlib-style project_root / "dir" / "file.ext" expressions also
+    # contain fragments that must not be checked independently.
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.BinOp) or not isinstance(node.op, ast.Div):
+            continue
+
+        literal_files = [
+            element
+            for element in ast.walk(node)
+            if isinstance(element, ast.Constant)
+            and isinstance(element.value, str)
+            and element.value.endswith(reference_suffixes)
+        ]
+        if not literal_files:
+            continue
+
+        handled, candidates = _literal_path_expression_candidates(
+            repo_root, node
+        )
+        handled_string_nodes.update(handled)
+        target = literal_files[-1]
+
+        if candidates and not any(candidate.exists() for candidate in candidates):
+            add_finding(
+                findings,
+                "WARNING",
+                "missing_reference",
+                path,
+                getattr(target, "lineno", 1),
+                "Path expression target was not found under known project roots",
+                target.value,
+                "Verify the joined pathlib path and its project-root source.",
             )
 
     # Check directly referenced model/config files in other string literals.
@@ -836,10 +908,42 @@ def self_test(config: dict[str, Any]) -> int:
             for item in relative_findings
         )
 
+        path_target = root / "calib/stereo/left.yaml"
+        path_target.parent.mkdir(parents=True)
+        path_target.write_text("test", encoding="utf-8")
+        path_launch = root / "ros2_ws/src/test_pkg/launch/path_expr.launch.py"
+        path_launch.write_text(
+            "from pathlib import Path\n"
+            "def generate_launch_description():\n"
+            "    project_root = Path('/dynamic')\n"
+            "    calibration = project_root / 'calib' / 'stereo' / 'left.yaml'\n"
+            "    return []\n",
+            encoding="utf-8",
+        )
+        path_findings: list[Finding] = []
+        parse_python_launch(
+            root,
+            path_launch,
+            path_launch.read_text(encoding="utf-8"),
+            config,
+            path_findings,
+        )
+        path_expr_ok = not any(
+            item.category == "missing_reference"
+            for item in path_findings
+        )
+
+        self_config_excluded = matches_any(
+            compile_patterns(config.get("exclude_path_patterns", [])),
+            "/config/robot_doctor/config_review_v1.json",
+        )
+
         results = [
             ("existing model reference accepted", not missing_reference),
             ("PathJoinSubstitution reference accepted", joined_ok),
+            ("pathlib path expression accepted", path_expr_ok),
             ("ros2_ws relative model accepted", relative_ok),
+            ("self configuration excluded", self_config_excluded),
             ("unsafe boolean detected", expected_warning),
             ("merge conflict detected", conflict_ok),
         ]

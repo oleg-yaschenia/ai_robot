@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "include_roots": [
     "ros2_ws/src",
     "config"
@@ -19,7 +19,8 @@
     "/install/",
     "/log/",
     "/__pycache__/",
-    "/config/robot_doctor/baselines/"
+    "/config/robot_doctor/baselines/",
+    "/config/robot_doctor/config_review_v1\\.json$"
   ],
   "reference_suffixes": [
     ".pt",
