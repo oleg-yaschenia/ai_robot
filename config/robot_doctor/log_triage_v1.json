@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "max_files": 200,
+  "max_file_bytes": 5242880,
+  "context_lines": 2,
+  "severity_patterns": {
+    "ERROR": [
+      "\\bFATAL\\b",
+      "\\bERROR\\b",
+      "Traceback \\(most recent call last\\)",
+      "\\bException\\b",
+      "segmentation fault",
+      "core dumped",
+      "CUDA out of memory",
+      "\\bOOM\\b",
+      "failed to (?:start|open|load|initialize|connect)",
+      "process has died"
+    ],
+    "WARNING": [
+      "\\bWARN(?:ING)?\\b",
+      "\\bdeprecated\\b",
+      "\\btimeout\\b",
+      "\\bretrying\\b",
+      "\\bdropped\\b",
+      "\\bnot found\\b",
+      "\\bunavailable\\b"
+    ]
+  },
+  "include_patterns": [
+    "\\bfailed\\b",
+    "\\bfailure\\b",
+    "\\bdenied\\b",
+    "\\bdisconnect(?:ed)?\\b",
+    "\\bunderflow\\b",
+    "\\boverflow\\b",
+    "\\binvalid\\b"
+  ],
+  "ignore_patterns": [
+    "Some selected packages are already built in one or more underlay workspaces",
+    "If you understand the risks and want to override a package",
+    "may be promoted to an error in a future release of colcon-override-check",
+    "AMENT_PREFIX_PATH.*doesn't exist",
+    "return_code=124.*tegrastats",
+    "Timed out after 3 seconds.*tegrastats",
+    "0 loaded units listed",
+    "Commands failed: 0",
+    "WARNING=0",
+    "ERROR=0",
+    "FAIL=0"
+  ],
+  "category_patterns": {
+    "python_exception": [
+      "Traceback \\(most recent call last\\)",
+      "\\b(?:TypeError|ValueError|KeyError|RuntimeError|ImportError|ModuleNotFoundError|AttributeError):"
+    ],
+    "cuda_memory": [
+      "CUDA out of memory",
+      "\\bOOM\\b",
+      "failed to allocate.*(?:CUDA|GPU|memory)"
+    ],
+    "camera": [
+      "\\bArgus\\b",
+      "\\bGStreamer\\b",
+      "\\bcamera\\b.*(?:error|failed|timeout|not found)",
+      "nvarguscamerasrc"
+    ],
+    "ros_transport": [
+      "\\bQoS\\b",
+      "\\bDDS\\b",
+      "\\bRMW\\b",
+      "publisher.*not found",
+      "subscriber.*not found",
+      "topic.*(?:unavailable|not found|timeout)",
+      "service.*(?:unavailable|not found|timeout)"
+    ],
+    "serial": [
+      "ttyTHS1",
+      "\\bserial\\b.*(?:error|failed|denied|disconnect|timeout)",
+      "Permission denied.*tty"
+    ],
+    "build": [
+      "colcon.*(?:error|failed)",
+      "CMake Error",
+      "ninja: build stopped",
+      "make(?:\\[\\d+\\])?: \\*\\*\\*",
+      "package.*not found"
+    ],
+    "timeout": [
+      "\\btimeout\\b",
+      "timed out"
+    ]
+  },
+  "category_severity": {
+    "python_exception": "ERROR",
+    "cuda_memory": "ERROR",
+    "camera": "ERROR",
+    "ros_transport": "WARNING",
+    "serial": "ERROR",
+    "build": "ERROR",
+    "timeout": "WARNING"
+  }
+}
