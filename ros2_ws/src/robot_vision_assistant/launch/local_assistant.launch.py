@@ -23,7 +23,10 @@ def generate_launch_description():
             "project_root",
             default_value=EnvironmentVariable(
                 "AI_ROBOT_ROOT",
-                default_value="/home/warxen/ai_robot",
+                default_value=PathJoinSubstitution([
+                    EnvironmentVariable("HOME"),
+                    "ai_robot",
+                ]),
             ),
             description=(
                 "Repository root; may also be set with AI_ROBOT_ROOT"

@@ -1,8 +1,16 @@
+import os
+from pathlib import Path
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    project_root = Path(
+        os.environ.get(
+            "AI_ROBOT_ROOT",
+            str(Path.home() / "ai_robot"),
+        )
+    ).expanduser()
     return LaunchDescription([
         Node(
             package="robot_vision_assistant",
@@ -14,8 +22,8 @@ def generate_launch_description():
                 {"mode": "local_only"},
                 {"allow_cloud": False},
                 {"allow_realtime": False},
-                {"snapshots_dir": "/home/warxen/ai_robot/data/vision_assistant/snapshots"},
-                {"db_path": "/home/warxen/ai_robot/data/vision_assistant/assistant_memory.sqlite"},
+                {"snapshots_dir": str(project_root / "data" / "vision_assistant" / "snapshots")},
+                {"db_path": str(project_root / "data" / "vision_assistant" / "assistant_memory.sqlite")},
             ],
         )
     ])

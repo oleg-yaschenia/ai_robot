@@ -14,12 +14,24 @@ from std_msgs.msg import String
 class TtsNode(Node):
     def __init__(self):
         super().__init__("tts_node")
+        project_root = Path(
+            os.environ.get(
+                "AI_ROBOT_ROOT",
+                str(Path.home() / "ai_robot"),
+            )
+        ).expanduser()
 
         self.declare_parameter("answer_topic", "/vision_assistant/answer")
         self.declare_parameter("status_topic", "/voice_tts/status")
         self.declare_parameter("enabled", True)
-        self.declare_parameter("piper_bin", "/home/warxen/ai_robot/data/tts/piper/piper/piper")
-        self.declare_parameter("model_path", "/home/warxen/ai_robot/data/tts/piper/ru_RU-ruslan-medium.onnx")
+        self.declare_parameter(
+            "piper_bin",
+            str(project_root / "data" / "tts" / "piper" / "piper" / "piper"),
+        )
+        self.declare_parameter(
+            "model_path",
+            str(project_root / "data" / "tts" / "piper" / "ru_RU-ruslan-medium.onnx"),
+        )
         self.declare_parameter("audio_player", "aplay")
         self.declare_parameter("audio_player_args", ["-q"])
         self.declare_parameter("tmp_dir", "/tmp/robot_tts")

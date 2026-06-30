@@ -1,8 +1,16 @@
+import os
+from pathlib import Path
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    project_root = Path(
+        os.environ.get(
+            "AI_ROBOT_ROOT",
+            str(Path.home() / "ai_robot"),
+        )
+    ).expanduser()
     return LaunchDescription([
         Node(
             package="robot_vision_assistant",
@@ -20,8 +28,8 @@ def generate_launch_description():
                 {"record_channels": 2},
                 {"record_format": "S32_LE"},
 
-                {"whisper_cli": "/home/warxen/ai_robot/tools/whisper.cpp/build/bin/whisper-cli"},
-                {"model_path": "/home/warxen/ai_robot/tools/whisper.cpp/models/ggml-base.bin"},
+                {"whisper_cli": str(project_root / "tools" / "whisper.cpp" / "build" / "bin" / "whisper-cli")},
+                {"model_path": str(project_root / "tools" / "whisper.cpp" / "models" / "ggml-base.bin")},
                 {"language": "ru"},
                 {"threads": 4},
                 {"processors": 1},

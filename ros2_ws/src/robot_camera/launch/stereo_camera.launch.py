@@ -1,9 +1,17 @@
+import os
+from pathlib import Path
 from launch import LaunchDescription
 from launch.actions import UnsetEnvironmentVariable
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    project_root = Path(
+        os.environ.get(
+            "AI_ROBOT_ROOT",
+            str(Path.home() / "ai_robot"),
+        )
+    ).expanduser()
     return LaunchDescription([
         UnsetEnvironmentVariable(name="DISPLAY"),
         UnsetEnvironmentVariable(name="WAYLAND_DISPLAY"),
@@ -21,8 +29,8 @@ def generate_launch_description():
                 {"fps": 10},
                 {"left_frame_id": "camera_left_optical_frame"},
                 {"right_frame_id": "camera_right_optical_frame"},
-                {"left_camera_info_yaml": "/home/warxen/ai_robot/calib/stereo/left.yaml"},
-                {"right_camera_info_yaml": "/home/warxen/ai_robot/calib/stereo/right.yaml"},
+                {"left_camera_info_yaml": str(project_root / "calib" / "stereo" / "left.yaml")},
+                {"right_camera_info_yaml": str(project_root / "calib" / "stereo" / "right.yaml")},
             ],
         )
     ])
