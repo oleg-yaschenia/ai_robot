@@ -1,0 +1,113 @@
+{
+  "schema_version": 2,
+  "include_roots": [
+    "ros2_ws/src",
+    "config"
+  ],
+  "include_suffixes": [
+    ".launch.py",
+    ".yaml",
+    ".yml",
+    ".json",
+    ".xml"
+  ],
+  "include_names": [
+    "package.xml"
+  ],
+  "exclude_path_patterns": [
+    "/build/",
+    "/install/",
+    "/log/",
+    "/__pycache__/",
+    "/config/robot_doctor/baselines/"
+  ],
+  "reference_suffixes": [
+    ".pt",
+    ".pth",
+    ".onnx",
+    ".engine",
+    ".plan",
+    ".trt",
+    ".yaml",
+    ".yml",
+    ".json"
+  ],
+  "ignored_reference_patterns": [
+    "^\\s*$",
+    "package://",
+    "^https?://"
+  ],
+  "dangerous_pattern_allowlist": [],
+  "dangerous_patterns": [
+    {
+      "pattern": "\\bsudo\\b",
+      "severity": "ERROR",
+      "category": "privilege_escalation",
+      "message": "Configuration contains sudo",
+      "recommendation": "Remove sudo from robot launch/configuration paths."
+    },
+    {
+      "pattern": "\\brm\\s+-rf\\b",
+      "severity": "ERROR",
+      "category": "destructive_command",
+      "message": "Configuration contains recursive forced deletion",
+      "recommendation": "Remove destructive deletion from launch/configuration files."
+    },
+    {
+      "pattern": "\\b(?:shutdown|reboot|poweroff)\\b",
+      "severity": "ERROR",
+      "category": "host_control",
+      "message": "Configuration can stop or reboot the host",
+      "recommendation": "Keep host power control outside normal robot launch configuration."
+    },
+    {
+      "pattern": "\\bsystemctl\\s+(?:restart|stop|disable|mask)\\b",
+      "severity": "ERROR",
+      "category": "service_control",
+      "message": "Configuration contains service-changing systemctl command",
+      "recommendation": "Do not change host services from robot launch/configuration files."
+    },
+    {
+      "pattern": "\\b(?:esptool|arduino-cli).*upload\\b",
+      "severity": "ERROR",
+      "category": "firmware_flash",
+      "message": "Configuration appears able to flash firmware",
+      "recommendation": "Keep firmware flashing in a separate manually approved workflow."
+    },
+    {
+      "pattern": "\\bos\\.system\\s*\\(",
+      "severity": "ERROR",
+      "category": "shell_execution",
+      "message": "Configuration uses os.system",
+      "recommendation": "Remove shell execution from launch/configuration files."
+    },
+    {
+      "pattern": "\\bsubprocess\\.(?:run|Popen|call|check_call|check_output)\\s*\\(",
+      "severity": "WARNING",
+      "category": "process_execution",
+      "message": "Configuration launches an external process directly",
+      "recommendation": "Review the command and replace it with a declared ROS launch action when possible."
+    },
+    {
+      "pattern": "\\bshell\\s*=\\s*True\\b",
+      "severity": "ERROR",
+      "category": "shell_execution",
+      "message": "Configuration enables shell=True",
+      "recommendation": "Avoid shell=True in robot configuration."
+    }
+  ],
+  "unsafe_boolean_keys": {
+    "disable_watchdog": "ERROR",
+    "watchdog_disabled": "ERROR",
+    "allow_unsafe": "ERROR",
+    "unsafe_mode": "ERROR",
+    "flash_firmware": "ERROR",
+    "motor_enable": "WARNING",
+    "motors_enabled": "WARNING",
+    "actuators_enabled": "WARNING",
+    "serial_write_enabled": "WARNING"
+  },
+  "hardcoded_path_exclude_patterns": [
+    "^/config/robot_doctor/baselines/"
+  ]
+}
