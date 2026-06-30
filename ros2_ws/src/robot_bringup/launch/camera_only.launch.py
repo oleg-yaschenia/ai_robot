@@ -1,11 +1,19 @@
+from pathlib import Path
+import os
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 
 
 def generate_launch_description():
+    project_root = Path(
+        os.environ.get(
+            "AI_ROBOT_ROOT",
+            str(Path.home() / "ai_robot"),
+        )
+    ).expanduser()
     return LaunchDescription([
         ExecuteProcess(
-            cmd=['bash', '/home/warxen/ai_robot/scripts/camera/save_one_stereo_pair.sh'],
+            cmd=["bash", str(project_root / "scripts" / "camera" / "save_one_stereo_pair.sh")],
             output='screen'
         ),
     ])
