@@ -37,7 +37,7 @@ def generate_launch_description():
             default_value=PathJoinSubstitution([
                 project_root,
                 "ros2_ws",
-                "yolo11l.pt",
+                "yolo11l.engine",
             ]),
         ),
         DeclareLaunchArgument(

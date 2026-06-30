@@ -16,6 +16,7 @@ def generate_launch_description():
     serial_port = LaunchConfiguration("serial_port")
     baud_rate = LaunchConfiguration("baud_rate")
     project_root = LaunchConfiguration("project_root")
+    yolo_model_path = LaunchConfiguration("yolo_model_path")
 
     robot_base = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -40,7 +41,10 @@ def generate_launch_description():
                 "local_assistant.launch.py",
             ])
         ),
-        launch_arguments={"project_root": project_root}.items(),
+        launch_arguments={
+            "project_root": project_root,
+            "yolo_model_path": yolo_model_path,
+        }.items(),
     )
 
     voice_led_bridge = IncludeLaunchDescription(
@@ -88,6 +92,18 @@ def generate_launch_description():
                 ]),
             ),
             description="Repository root; may also be set with AI_ROBOT_ROOT",
+        ),
+        DeclareLaunchArgument(
+            "yolo_model_path",
+            default_value=PathJoinSubstitution([
+                project_root,
+                "ros2_ws",
+                "yolo11l.engine",
+            ]),
+            description=(
+                "YOLO model path. Use yolo11l.engine for TensorRT "
+                "or yolo11l.pt for PyTorch fallback."
+            ),
         ),
         robot_base,
         local_assistant,

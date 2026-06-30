@@ -275,7 +275,7 @@ class YoloPerceptionNode(Node):
         self.previous_motion_gray = None
         self.disparity_frames = deque(maxlen=6)
 
-        self.model = YOLO(self.model_path)
+        self.model = YOLO(self.model_path, task="detect")
 
         self.tracks: Dict[int, Dict[str, Any]] = {}
         self.next_track_id = 1
