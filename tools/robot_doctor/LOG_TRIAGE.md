@@ -1,57 +1,29 @@
-# Log Triage v1
+# Log Triage v1.1
 
-Read-only deterministic analyzer for recent robot engineering and ROS logs.
+The first version used broad keyword matching and produced false positives
+from successful colcon debug lines, package license text, ttyTHS1 listings,
+and ROS doctor headings.
 
-## What it does
+v1.1 scans only relevant files, requires explicit error/warning markers,
+categorizes only confirmed issues, and includes a built-in self-test.
 
-- discovers command logs from the latest Regression Agent and Robot Doctor runs;
-- scans recent ROS build/test/runtime logs when present;
-- classifies errors and warnings;
-- groups repeated messages after removing timestamps and volatile numbers;
-- separates configured benign warnings;
-- identifies a primary issue;
-- proposes only safe diagnostic checks;
-- writes Markdown and JSON reports outside Git.
+## Self-test
 
-## Safety
+```bash
+python3 ~/ai_robot/tools/robot_doctor/log_triage.py --self-test
+```
 
-It does not:
-
-- use `sudo`;
-- restart services;
-- change ROS parameters;
-- flash firmware;
-- send motor, servo or UART commands;
-- edit source code or configuration.
+Expected: `Self-test: 10/10 passed`
 
 ## Run
 
 ```bash
-python3 \
-  ~/ai_robot/tools/robot_doctor/log_triage.py
+python3 ~/ai_robot/tools/robot_doctor/log_triage.py
+echo "EXIT_CODE=$?"
 ```
 
-View the report:
+Reports remain outside Git under:
 
-```bash
-TRIAGE_DIR=$(
-  cat ~/ai_robot_artifacts/robot_doctor/log_triage/latest.txt
-)
-
-cat "$TRIAGE_DIR/log_triage_report.md"
+```text
+~/ai_robot_artifacts/robot_doctor/log_triage/
 ```
-
-Scan an additional log file or directory:
-
-```bash
-python3 \
-  ~/ai_robot/tools/robot_doctor/log_triage.py \
-  --path /path/to/log_or_directory
-```
-
-Exit codes:
-
-- `0`: no active issues;
-- `2`: active warnings;
-- `3`: active errors;
-- `1`: tool execution failure.

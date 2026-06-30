@@ -1,102 +1,118 @@
 {
-  "schema_version": 1,
-  "max_files": 200,
+  "schema_version": 2,
+  "max_files": 120,
   "max_file_bytes": 5242880,
-  "context_lines": 2,
-  "severity_patterns": {
-    "ERROR": [
-      "\\bFATAL\\b",
-      "\\bERROR\\b",
-      "Traceback \\(most recent call last\\)",
-      "\\bException\\b",
-      "segmentation fault",
-      "core dumped",
-      "CUDA out of memory",
-      "\\bOOM\\b",
-      "failed to (?:start|open|load|initialize|connect)",
-      "process has died"
-    ],
-    "WARNING": [
-      "\\bWARN(?:ING)?\\b",
-      "\\bdeprecated\\b",
-      "\\btimeout\\b",
-      "\\bretrying\\b",
-      "\\bdropped\\b",
-      "\\bnot found\\b",
-      "\\bunavailable\\b"
-    ]
-  },
-  "include_patterns": [
-    "\\bfailed\\b",
-    "\\bfailure\\b",
-    "\\bdenied\\b",
-    "\\bdisconnect(?:ed)?\\b",
-    "\\bunderflow\\b",
-    "\\boverflow\\b",
-    "\\binvalid\\b"
+  "include_file_patterns": [
+    "\\.log$",
+    "\\.out$",
+    "\\.err$",
+    "\\.stdout\\.txt$",
+    "\\.stderr\\.txt$"
   ],
-  "ignore_patterns": [
+  "exclude_file_patterns": [
+    "/logger_all\\.log$",
+    "/events\\.log$",
+    "/command\\.log$",
+    "/python_packages\\.stdout\\.txt$",
+    "/serial_device\\.stdout\\.txt$",
+    "/top_processes\\.stdout\\.txt$",
+    "/ros_doctor_report\\.stdout\\.txt$",
+    "/ros_(?:topics|services|actions|nodes)\\.stdout\\.txt$",
+    "/system_failed_units\\.stdout\\.txt$",
+    "/tegrastats_sample\\.stdout\\.txt$"
+  ],
+  "ignore_line_patterns": [
+    "\\bDEBUG\\b",
+    "Invoking command in .*:",
+    "Invoked command in .* returned ['\\\"]?0['\\\"]?",
+    "return_code=0\\b",
+    "Summary:\\s+\\d+\\s+packages?\\s+finished",
+    "Finished <<<",
+    "0 loaded units listed",
+    "Commands failed:\\s*0",
+    "WARNING=0",
+    "ERROR=0",
+    "FAIL=0",
+    "QOS COMPATIBILITY LIST",
+    "RMW MIDDLEWARE",
+    "\\brmw\\s*:\\s*latest=",
+    "/dev/ttyTHS1$",
+    "GPL.*Exception",
+    "Runtime Library Exception"
+  ],
+  "ignored_issue_patterns": [
+    "Package\\(s\\) not found:\\s*opencv-python",
     "Some selected packages are already built in one or more underlay workspaces",
     "If you understand the risks and want to override a package",
     "may be promoted to an error in a future release of colcon-override-check",
     "AMENT_PREFIX_PATH.*doesn't exist",
-    "return_code=124.*tegrastats",
-    "Timed out after 3 seconds.*tegrastats",
-    "0 loaded units listed",
-    "Commands failed: 0",
-    "WARNING=0",
-    "ERROR=0",
-    "FAIL=0"
+    "ignore:setup\\.py install is deprecated",
+    "ignore:easy_install command is deprecated",
+    "timeout\\s+3\\s+tegrastats"
+  ],
+  "error_patterns": [
+    "(?:^|\\s)\\[(?:ERROR|FATAL)\\](?:\\s|$)",
+    "^(?:ERROR|FATAL)\\s*:",
+    "Traceback \\(most recent call last\\):",
+    "^(?:TypeError|ValueError|KeyError|RuntimeError|ImportError|ModuleNotFoundError|AttributeError|OSError|PermissionError):",
+    "\\bsegmentation fault\\b",
+    "\\bcore dumped\\b",
+    "\\bCUDA out of memory\\b",
+    "\\bprocess has died\\b",
+    "\\bFailed <<<\\b",
+    "\\bAborted <<<\\b",
+    "Summary:\\s+\\d+\\s+packages?\\s+failed",
+    "\\bCMake Error\\b",
+    "\\bninja:\\s+build stopped\\b",
+    "\\bmake(?:\\[\\d+\\])?:\\s+\\*\\*\\*",
+    "(?:^|\\s)(?:fatal )?error:\\s+",
+    "\\bfailed to (?:start|open|load|initialize|connect)\\b",
+    "\\bPermission denied\\b"
+  ],
+  "warning_patterns": [
+    "(?:^|\\s)\\[(?:WARN|WARNING)\\](?:\\s|$)",
+    "^WARNING\\s*:",
+    "\\btimed out\\b",
+    "\\btimeout while\\b",
+    "\\bdropped (?:frame|message|packet)\\b",
+    "\\bQoS incompatib",
+    "\\bdeprecated\\b",
+    "\\bretrying\\b"
   ],
   "category_patterns": {
     "python_exception": [
       "Traceback \\(most recent call last\\)",
-      "\\b(?:TypeError|ValueError|KeyError|RuntimeError|ImportError|ModuleNotFoundError|AttributeError):"
-    ],
-    "cuda_memory": [
-      "CUDA out of memory",
-      "\\bOOM\\b",
-      "failed to allocate.*(?:CUDA|GPU|memory)"
+      "^(?:TypeError|ValueError|KeyError|RuntimeError|ImportError|ModuleNotFoundError|AttributeError|OSError|PermissionError):"
     ],
     "camera": [
       "\\bArgus\\b",
       "\\bGStreamer\\b",
-      "\\bcamera\\b.*(?:error|failed|timeout|not found)",
-      "nvarguscamerasrc"
+      "nvarguscamerasrc",
+      "\\bcamera\\b"
     ],
     "ros_transport": [
-      "\\bQoS\\b",
-      "\\bDDS\\b",
-      "\\bRMW\\b",
-      "publisher.*not found",
-      "subscriber.*not found",
-      "topic.*(?:unavailable|not found|timeout)",
-      "service.*(?:unavailable|not found|timeout)"
+      "\\bQoS incompatib",
+      "\\bDDS\\b.*(?:error|failed|warn)",
+      "\\bRMW\\b.*(?:error|failed|warn)",
+      "\\btopic\\b.*(?:unavailable|not found|timed out)",
+      "\\bservice\\b.*(?:unavailable|not found|timed out)"
     ],
     "serial": [
-      "ttyTHS1",
-      "\\bserial\\b.*(?:error|failed|denied|disconnect|timeout)",
-      "Permission denied.*tty"
+      "ttyTHS1.*(?:error|failed|denied|disconnect|timed out)",
+      "\\bserial\\b.*(?:error|failed|denied|disconnect|timed out)"
     ],
     "build": [
-      "colcon.*(?:error|failed)",
-      "CMake Error",
-      "ninja: build stopped",
-      "make(?:\\[\\d+\\])?: \\*\\*\\*",
+      "\\bFailed <<<\\b",
+      "\\bAborted <<<\\b",
+      "\\bCMake Error\\b",
+      "\\bninja:\\s+build stopped\\b",
+      "\\bmake(?:\\[\\d+\\])?:\\s+\\*\\*\\*",
+      "(?:^|\\s)(?:fatal )?error:\\s+",
       "package.*not found"
     ],
     "timeout": [
-      "\\btimeout\\b",
-      "timed out"
+      "\\btimed out\\b",
+      "\\btimeout while\\b"
     ]
-  },
-  "category_severity": {
-    "python_exception": "ERROR",
-    "cuda_memory": "ERROR",
-    "camera": "ERROR",
-    "ros_transport": "WARNING",
-    "serial": "ERROR",
-    "build": "ERROR",
-    "timeout": "WARNING"
   }
 }
