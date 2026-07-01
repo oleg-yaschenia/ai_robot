@@ -3,6 +3,7 @@
 import json
 import time
 from collections import deque
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import cv2
@@ -52,6 +53,7 @@ class YoloPerceptionNode(Node):
 
         self.declare_parameter("image_topic", "/camera/right/image_rect")
         self.declare_parameter("model_path", "yolo11l.pt")
+        self.declare_parameter("fallback_model_path", "")
         self.declare_parameter("device", "0")
         self.declare_parameter("imgsz", 640)
 
@@ -116,7 +118,13 @@ class YoloPerceptionNode(Node):
         self.declare_parameter("depth_saturation_margin_px", 1.0)
 
         self.image_topic = str(self.get_parameter("image_topic").value)
-        self.model_path = str(self.get_parameter("model_path").value)
+        self.requested_model_path = str(
+            self.get_parameter("model_path").value
+        ).strip()
+        self.fallback_model_path = str(
+            self.get_parameter("fallback_model_path").value
+        ).strip()
+        self.model_path = self.requested_model_path
         self.device = self._parse_device(
             str(self.get_parameter("device").value)
         )
@@ -275,7 +283,11 @@ class YoloPerceptionNode(Node):
         self.previous_motion_gray = None
         self.disparity_frames = deque(maxlen=6)
 
-        self.model = YOLO(self.model_path, task="detect")
+        self.active_model_path = ""
+        self.inference_backend = "unknown"
+        self.fallback_used = False
+        self.fallback_reason: Optional[str] = None
+        self.model = self._load_preferred_or_fallback()
 
         self.tracks: Dict[int, Dict[str, Any]] = {}
         self.next_track_id = 1
@@ -343,10 +355,95 @@ class YoloPerceptionNode(Node):
 
         self.get_logger().info(
             "yolo_perception_node l640-v5-depth started: "
-            f"model={self.model_path}, device={self.device}, "
-            f"imgsz={self.imgsz}, period={self.analysis_period_sec}s, "
+            f"requested_model={self.requested_model_path}, "
+            f"active_model={self.active_model_path}, "
+            f"backend={self.inference_backend}, "
+            f"fallback_used={self.fallback_used}, "
+            f"device={self.device}, imgsz={self.imgsz}, "
+            f"period={self.analysis_period_sec}s, "
             f"nms_iou={self.iou_threshold}"
         )
+
+    @staticmethod
+    def _normalize_model_path(model_path: str) -> str:
+        model_path = model_path.strip()
+        if not model_path:
+            return ""
+        return str(Path(model_path).expanduser())
+
+    @staticmethod
+    def _backend_for_path(model_path: str) -> str:
+        suffix = Path(model_path).suffix.lower()
+        if suffix == ".engine":
+            return "tensorrt"
+        if suffix == ".pt":
+            return "pytorch"
+        return suffix.lstrip(".") or "unknown"
+
+    @staticmethod
+    def _model_error_text(exc: Exception) -> str:
+        return f"{type(exc).__name__}: {exc}"[:500]
+
+    def _activate_model(
+        self,
+        model_path: str,
+        fallback_reason: Optional[str] = None,
+    ):
+        normalized_path = self._normalize_model_path(model_path)
+        if not normalized_path:
+            raise ValueError("model path is empty")
+        if not Path(normalized_path).is_file():
+            raise FileNotFoundError(normalized_path)
+
+        model = YOLO(normalized_path, task="detect")
+        self.model_path = normalized_path
+        self.active_model_path = normalized_path
+        self.inference_backend = self._backend_for_path(normalized_path)
+        requested_path = self._normalize_model_path(
+            self.requested_model_path
+        )
+        self.fallback_used = normalized_path != requested_path
+        self.fallback_reason = fallback_reason
+        self._warmed_up = False
+        return model
+
+    def _load_preferred_or_fallback(self):
+        requested_path = self._normalize_model_path(
+            self.requested_model_path
+        )
+        fallback_path = self._normalize_model_path(
+            self.fallback_model_path
+        )
+
+        try:
+            return self._activate_model(requested_path)
+        except Exception as primary_exc:
+            primary_error = self._model_error_text(primary_exc)
+
+            if not fallback_path or fallback_path == requested_path:
+                raise RuntimeError(
+                    "Failed to load requested YOLO model "
+                    f"{requested_path}: {primary_error}; "
+                    "no distinct fallback configured"
+                ) from primary_exc
+
+            self.get_logger().warning(
+                "Requested YOLO model could not be loaded; trying fallback: "
+                f"requested={requested_path}, fallback={fallback_path}, "
+                f"reason={primary_error}"
+            )
+            try:
+                return self._activate_model(
+                    fallback_path,
+                    fallback_reason=primary_error,
+                )
+            except Exception as fallback_exc:
+                fallback_error = self._model_error_text(fallback_exc)
+                raise RuntimeError(
+                    "Failed to load both YOLO models: "
+                    f"requested={requested_path} ({primary_error}); "
+                    f"fallback={fallback_path} ({fallback_error})"
+                ) from fallback_exc
 
     @staticmethod
     def _parse_device(value: str) -> Union[int, str]:
@@ -1032,11 +1129,7 @@ class YoloPerceptionNode(Node):
             f"{distance_text}"
         ).strip(" ,")
 
-    def _warm_up(self, frame) -> None:
-        if self._warmed_up:
-            return
-
-        started = time.perf_counter()
+    def _run_warm_up(self, frame) -> None:
         for _ in range(2):
             self.model.predict(
                 source=frame,
@@ -1048,14 +1141,62 @@ class YoloPerceptionNode(Node):
                 verbose=False,
                 stream=False,
             )
-
         if self.device != "cpu":
             torch.cuda.synchronize()
+
+    def _warm_up(self, frame) -> None:
+        if self._warmed_up:
+            return
+
+        started = time.perf_counter()
+        try:
+            self._run_warm_up(frame)
+        except Exception as primary_exc:
+            primary_error = self._model_error_text(primary_exc)
+            fallback_path = self._normalize_model_path(
+                self.fallback_model_path
+            )
+            active_path = self._normalize_model_path(
+                self.active_model_path
+            )
+
+            if (
+                self.fallback_used
+                or not fallback_path
+                or fallback_path == active_path
+            ):
+                raise RuntimeError(
+                    "YOLO warm-up failed and no unused fallback is available: "
+                    f"active={active_path}, reason={primary_error}"
+                ) from primary_exc
+
+            self.get_logger().warning(
+                "YOLO warm-up failed; activating fallback model: "
+                f"active={active_path}, fallback={fallback_path}, "
+                f"reason={primary_error}"
+            )
+            try:
+                self.model = self._activate_model(
+                    fallback_path,
+                    fallback_reason=primary_error,
+                )
+                self._run_warm_up(frame)
+            except Exception as fallback_exc:
+                fallback_error = self._model_error_text(fallback_exc)
+                raise RuntimeError(
+                    "YOLO warm-up failed for both requested and fallback models: "
+                    f"requested_error={primary_error}; "
+                    f"fallback_error={fallback_error}"
+                ) from fallback_exc
 
         self._warmed_up = True
         elapsed_ms = (time.perf_counter() - started) * 1000.0
         self.get_logger().info(
-            f"YOLO warm-up completed in {elapsed_ms:.1f} ms"
+            "YOLO warm-up completed: "
+            f"backend={self.inference_backend}, "
+            f"active_model={self.active_model_path}, "
+            f"fallback_used={self.fallback_used}, "
+            f"elapsed_ms={elapsed_ms:.1f}"
         )
 
     def _update_tracks(
@@ -1537,7 +1678,12 @@ class YoloPerceptionNode(Node):
                 ),
             },
             "detector": {
-                "model": self.model_path,
+                "model": self.active_model_path,
+                "requested_model": self.requested_model_path,
+                "active_model": self.active_model_path,
+                "backend": self.inference_backend,
+                "fallback_used": self.fallback_used,
+                "fallback_reason": self.fallback_reason,
                 "type": "ultralytics_yolo",
                 "version": "l640-v5-depth",
                 "device": str(self.device),

@@ -11,6 +11,9 @@ from launch_ros.actions import Node
 def generate_launch_description():
     project_root = LaunchConfiguration("project_root")
     yolo_model_path = LaunchConfiguration("yolo_model_path")
+    yolo_fallback_model_path = LaunchConfiguration(
+        "yolo_fallback_model_path"
+    )
     snapshots_dir = LaunchConfiguration("snapshots_dir")
     db_path = LaunchConfiguration("db_path")
     piper_bin = LaunchConfiguration("piper_bin")
@@ -38,6 +41,14 @@ def generate_launch_description():
                 project_root,
                 "ros2_ws",
                 "yolo11l.engine",
+            ]),
+        ),
+        DeclareLaunchArgument(
+            "yolo_fallback_model_path",
+            default_value=PathJoinSubstitution([
+                project_root,
+                "ros2_ws",
+                "yolo11l.pt",
             ]),
         ),
         DeclareLaunchArgument(
@@ -109,6 +120,7 @@ def generate_launch_description():
             parameters=[
                 {"image_topic": "/camera/right/image_rect"},
                 {"model_path": yolo_model_path},
+                {"fallback_model_path": yolo_fallback_model_path},
                 {"device": "0"},
                 {"imgsz": 640},
                 {"inference_conf_threshold": 0.10},

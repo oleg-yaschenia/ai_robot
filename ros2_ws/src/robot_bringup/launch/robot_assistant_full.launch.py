@@ -17,6 +17,9 @@ def generate_launch_description():
     baud_rate = LaunchConfiguration("baud_rate")
     project_root = LaunchConfiguration("project_root")
     yolo_model_path = LaunchConfiguration("yolo_model_path")
+    yolo_fallback_model_path = LaunchConfiguration(
+        "yolo_fallback_model_path"
+    )
 
     robot_base = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -44,6 +47,7 @@ def generate_launch_description():
         launch_arguments={
             "project_root": project_root,
             "yolo_model_path": yolo_model_path,
+            "yolo_fallback_model_path": yolo_fallback_model_path,
         }.items(),
     )
 
@@ -100,9 +104,18 @@ def generate_launch_description():
                 "ros2_ws",
                 "yolo11l.engine",
             ]),
+            description="Preferred YOLO model path.",
+        ),
+        DeclareLaunchArgument(
+            "yolo_fallback_model_path",
+            default_value=PathJoinSubstitution([
+                project_root,
+                "ros2_ws",
+                "yolo11l.pt",
+            ]),
             description=(
-                "YOLO model path. Use yolo11l.engine for TensorRT "
-                "or yolo11l.pt for PyTorch fallback."
+                "Fallback YOLO model used when the preferred model "
+                "cannot be loaded or warmed up."
             ),
         ),
         robot_base,
