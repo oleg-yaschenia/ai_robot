@@ -37,6 +37,7 @@ COLLECTOR_VERSION = "robot-doctor-v1.1"
 EXPECTED_NODES = {
     "/asr_node",
     "/assistant_router_node",
+    "/assistant_core_shadow_node",
     "/camera/left/left_rectify",
     "/camera/right/right_rectify",
     "/esp32_bridge_node",
