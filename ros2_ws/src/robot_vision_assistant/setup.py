@@ -24,6 +24,7 @@ setup(
     entry_points={
         'console_scripts': [
             'vision_assistant_node = robot_vision_assistant.vision_assistant_node:main',
+            'assistant_router_node = robot_vision_assistant.assistant_router_node:main',
             'local_perception_node = robot_vision_assistant.local_perception_node:main',
             'yolo_perception_node = robot_vision_assistant.yolo_perception_node:main',
             'tts_node = robot_vision_assistant.tts_node:main',

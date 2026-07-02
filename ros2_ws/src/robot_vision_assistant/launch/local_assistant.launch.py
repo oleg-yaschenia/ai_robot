@@ -207,6 +207,19 @@ def generate_launch_description():
 
         Node(
             package="robot_vision_assistant",
+            executable="assistant_router_node",
+            name="assistant_router_node",
+            output="screen",
+            parameters=[
+                {"query_topic": "/vision_assistant/query"},
+                {"scene_topic": "/scene/interpreted_json"},
+                {"decision_topic": "/assistant/router/decision_json"},
+                {"max_scene_age_sec": 2.0},
+            ],
+        ),
+
+        Node(
+            package="robot_vision_assistant",
             executable="vision_assistant_node",
             name="vision_assistant_node",
             output="screen",
