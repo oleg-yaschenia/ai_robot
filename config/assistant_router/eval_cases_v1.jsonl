@@ -1,0 +1,96 @@
+{"id": "chat_001", "query": "Привет, как дела?", "expected_mode": "chat", "group": "small_talk", "notes": ""}
+{"id": "chat_002", "query": "Как тебя зовут?", "expected_mode": "chat", "group": "small_talk", "notes": ""}
+{"id": "chat_003", "query": "Расскажи, что ты умеешь.", "expected_mode": "chat", "group": "capability", "notes": ""}
+{"id": "chat_004", "query": "Какая сегодня дата?", "expected_mode": "chat", "group": "general_question", "notes": ""}
+{"id": "chat_005", "query": "Почему небо голубое?", "expected_mode": "chat", "group": "general_question", "notes": ""}
+{"id": "chat_006", "query": "Объясни, что такое TensorRT.", "expected_mode": "chat", "group": "technical_question", "notes": ""}
+{"id": "chat_007", "query": "Чем кошка отличается от собаки?", "expected_mode": "chat", "group": "general_question", "notes": ""}
+{"id": "chat_008", "query": "Как работает твоя память?", "expected_mode": "chat", "group": "capability", "notes": ""}
+{"id": "chat_009", "query": "Ты умеешь поворачивать голову?", "expected_mode": "chat", "group": "capability", "notes": "Question, not a command."}
+{"id": "chat_010", "query": "Можно ли тебя попросить подъехать позже?", "expected_mode": "chat", "group": "capability", "notes": "Hypothetical, not an immediate command."}
+{"id": "chat_011", "query": "Что означает команда «включи свет»?", "expected_mode": "chat", "group": "quoted_command", "notes": "Must not be treated as an action."}
+{"id": "chat_012", "query": "Когда нужно сказать «стоп»?", "expected_mode": "chat", "group": "quoted_command", "notes": "Must not be treated as an action."}
+{"id": "chat_013", "query": "Как правильно повернуть направо?", "expected_mode": "chat", "group": "general_question", "notes": ""}
+{"id": "chat_014", "query": "Почему робот остановился?", "expected_mode": "chat", "group": "general_question", "notes": ""}
+{"id": "chat_015", "query": "Расскажи шутку.", "expected_mode": "chat", "group": "small_talk", "notes": ""}
+{"id": "chat_016", "query": "Кто такой Алан Тьюринг?", "expected_mode": "chat", "group": "general_question", "notes": ""}
+{"id": "chat_017", "query": "Что ты думаешь о домашних роботах?", "expected_mode": "chat", "group": "general_question", "notes": ""}
+{"id": "chat_018", "query": "Напомни, какие у тебя режимы работы.", "expected_mode": "chat", "group": "capability", "notes": "Conversational request, not physical action."}
+{"id": "chat_019", "query": "Слово «стоп» написано на табличке?", "expected_mode": "chat", "group": "quoted_command", "notes": "Must not trigger stop."}
+{"id": "chat_020", "query": "Можешь объяснить, как включить Wi-Fi?", "expected_mode": "chat", "group": "technical_question", "notes": ""}
+{"id": "chat_021", "query": "Какой у тебя процессор?", "expected_mode": "chat", "group": "capability", "notes": ""}
+{"id": "chat_022", "query": "Сколько будет два плюс два?", "expected_mode": "chat", "group": "general_question", "notes": ""}
+{"id": "chat_023", "query": "Почему ты иногда отвечаешь медленно?", "expected_mode": "chat", "group": "capability", "notes": ""}
+{"id": "chat_024", "query": "Спасибо за помощь.", "expected_mode": "chat", "group": "small_talk", "notes": ""}
+{"id": "visual_001", "query": "Что ты видишь?", "expected_mode": "visual_chat", "group": "direct_scene", "notes": ""}
+{"id": "visual_002", "query": "Опиши сцену.", "expected_mode": "visual_chat", "group": "direct_scene", "notes": ""}
+{"id": "visual_003", "query": "Кто находится в кадре?", "expected_mode": "visual_chat", "group": "direct_scene", "notes": ""}
+{"id": "visual_004", "query": "Какие предметы перед тобой?", "expected_mode": "visual_chat", "group": "direct_scene", "notes": ""}
+{"id": "visual_005", "query": "Есть ли человек в кадре?", "expected_mode": "visual_chat", "group": "presence", "notes": ""}
+{"id": "visual_006", "query": "Сколько людей ты видишь?", "expected_mode": "visual_chat", "group": "count", "notes": ""}
+{"id": "visual_007", "query": "Где находится стул?", "expected_mode": "visual_chat", "group": "location", "notes": ""}
+{"id": "visual_008", "query": "Что находится слева?", "expected_mode": "visual_chat", "group": "location", "notes": "No explicit entity token."}
+{"id": "visual_009", "query": "Что находится справа от человека?", "expected_mode": "visual_chat", "group": "relation", "notes": ""}
+{"id": "visual_010", "query": "Кто ближе всего к камере?", "expected_mode": "visual_chat", "group": "nearest", "notes": ""}
+{"id": "visual_011", "query": "Что находится дальше всего?", "expected_mode": "visual_chat", "group": "distance", "notes": "No explicit entity token."}
+{"id": "visual_012", "query": "Есть ли рядом со мной кто-нибудь?", "expected_mode": "visual_chat", "group": "presence", "notes": "No explicit known entity token."}
+{"id": "visual_013", "query": "Что изменилось в комнате?", "expected_mode": "visual_chat", "group": "change", "notes": ""}
+{"id": "visual_014", "query": "Видишь ли ты кошку?", "expected_mode": "visual_chat", "group": "presence", "notes": ""}
+{"id": "visual_015", "query": "Сколько стульев в кадре?", "expected_mode": "visual_chat", "group": "count", "notes": ""}
+{"id": "visual_016", "query": "Где телефон относительно человека?", "expected_mode": "visual_chat", "group": "relation", "notes": ""}
+{"id": "visual_017", "query": "Что лежит на столе?", "expected_mode": "visual_chat", "group": "relation", "notes": ""}
+{"id": "visual_018", "query": "Есть ли что-нибудь перед камерой?", "expected_mode": "visual_chat", "group": "presence", "notes": ""}
+{"id": "visual_019", "query": "Как далеко находится человек?", "expected_mode": "visual_chat", "group": "distance", "notes": ""}
+{"id": "visual_020", "query": "Что находится около стула?", "expected_mode": "visual_chat", "group": "relation", "notes": ""}
+{"id": "visual_021", "query": "Кто стоит по центру?", "expected_mode": "visual_chat", "group": "location", "notes": ""}
+{"id": "visual_022", "query": "Что сейчас происходит перед тобой?", "expected_mode": "visual_chat", "group": "direct_scene", "notes": ""}
+{"id": "visual_023", "query": "Появился ли новый объект?", "expected_mode": "visual_chat", "group": "change", "notes": ""}
+{"id": "visual_024", "query": "Исчез ли человек из кадра?", "expected_mode": "visual_chat", "group": "change", "notes": ""}
+{"id": "action_001", "query": "Остановись.", "expected_mode": "action", "group": "stop", "notes": ""}
+{"id": "action_002", "query": "Стоп.", "expected_mode": "action", "group": "stop", "notes": ""}
+{"id": "action_003", "query": "Поверни направо.", "expected_mode": "action", "group": "turn", "notes": ""}
+{"id": "action_004", "query": "Поверни налево.", "expected_mode": "action", "group": "turn", "notes": ""}
+{"id": "action_005", "query": "Развернись.", "expected_mode": "action", "group": "turn", "notes": ""}
+{"id": "action_006", "query": "Подъедь ко мне.", "expected_mode": "action", "group": "move", "notes": ""}
+{"id": "action_007", "query": "Отъедь назад.", "expected_mode": "action", "group": "move", "notes": ""}
+{"id": "action_008", "query": "Следуй за мной.", "expected_mode": "action", "group": "follow", "notes": ""}
+{"id": "action_009", "query": "Посмотри налево.", "expected_mode": "action", "group": "head", "notes": ""}
+{"id": "action_010", "query": "Поверни голову вправо.", "expected_mode": "action", "group": "head", "notes": ""}
+{"id": "action_011", "query": "Наклони голову вниз.", "expected_mode": "action", "group": "head", "notes": ""}
+{"id": "action_012", "query": "Возьми бутылку.", "expected_mode": "action", "group": "manipulation", "notes": ""}
+{"id": "action_013", "query": "Подними предмет.", "expected_mode": "action", "group": "manipulation", "notes": ""}
+{"id": "action_014", "query": "Положи чашку на стол.", "expected_mode": "action", "group": "manipulation", "notes": ""}
+{"id": "action_015", "query": "Принеси телефон.", "expected_mode": "action", "group": "manipulation", "notes": ""}
+{"id": "action_016", "query": "Включи свет.", "expected_mode": "action", "group": "switch", "notes": ""}
+{"id": "action_017", "query": "Выключи подсветку.", "expected_mode": "action", "group": "switch", "notes": ""}
+{"id": "action_018", "query": "Сделай шаг назад.", "expected_mode": "action", "group": "move", "notes": "Likely missed by simple keyword rules."}
+{"id": "action_019", "query": "Подними голову выше.", "expected_mode": "action", "group": "head", "notes": ""}
+{"id": "action_020", "query": "Замолчи.", "expected_mode": "action", "group": "voice_control", "notes": "Should be treated as an action."}
+{"id": "action_021", "query": "Говори громче.", "expected_mode": "action", "group": "voice_control", "notes": "Should be treated as an action."}
+{"id": "action_022", "query": "Сделай фотографию.", "expected_mode": "action", "group": "camera_action", "notes": "Should be treated as an action."}
+{"id": "action_023", "query": "Начни слушать.", "expected_mode": "action", "group": "voice_control", "notes": "Should be treated as an action."}
+{"id": "action_024", "query": "Вернись в исходное положение.", "expected_mode": "action", "group": "pose", "notes": "Should be treated as an action."}
+{"id": "action_report_001", "query": "Поверни направо и скажи, что видишь.", "expected_mode": "action+report", "group": "turn_report", "notes": ""}
+{"id": "action_report_002", "query": "Подъедь к человеку и сообщи расстояние.", "expected_mode": "action+report", "group": "move_report", "notes": ""}
+{"id": "action_report_003", "query": "Посмотри налево и опиши сцену.", "expected_mode": "action+report", "group": "head_report", "notes": ""}
+{"id": "action_report_004", "query": "Возьми бутылку и скажи, получилось ли.", "expected_mode": "action+report", "group": "manipulation_report", "notes": ""}
+{"id": "action_report_005", "query": "Остановись и сообщи результат.", "expected_mode": "action+report", "group": "stop_report", "notes": ""}
+{"id": "action_report_006", "query": "Следуй за мной и докладывай, если потеряешь меня.", "expected_mode": "action+report", "group": "follow_report", "notes": ""}
+{"id": "action_report_007", "query": "Поверни голову вправо, потом скажи, кто в кадре.", "expected_mode": "action+report", "group": "head_report", "notes": ""}
+{"id": "action_report_008", "query": "Подъедь к стулу, а потом сообщи расстояние.", "expected_mode": "action+report", "group": "move_report", "notes": ""}
+{"id": "action_report_009", "query": "Включи свет и скажи, стало ли светлее.", "expected_mode": "action+report", "group": "switch_report", "notes": ""}
+{"id": "action_report_010", "query": "Выключи подсветку и сообщи результат.", "expected_mode": "action+report", "group": "switch_report", "notes": ""}
+{"id": "action_report_011", "query": "Принеси телефон и отчитайся.", "expected_mode": "action+report", "group": "manipulation_report", "notes": ""}
+{"id": "action_report_012", "query": "Развернись и опиши, что перед тобой.", "expected_mode": "action+report", "group": "turn_report", "notes": ""}
+{"id": "action_report_013", "query": "Сделай шаг назад и скажи, что изменилось.", "expected_mode": "action+report", "group": "move_report", "notes": "Likely missed action verb."}
+{"id": "action_report_014", "query": "Замолчи и сообщи, когда будешь готов слушать.", "expected_mode": "action+report", "group": "voice_report", "notes": ""}
+{"id": "action_report_015", "query": "Сделай фотографию и скажи, сколько людей видно.", "expected_mode": "action+report", "group": "camera_report", "notes": ""}
+{"id": "action_report_016", "query": "Вернись в исходное положение и подтверди выполнение.", "expected_mode": "action+report", "group": "pose_report", "notes": ""}
+{"id": "action_report_017", "query": "Подъедь к двери, затем сообщи расстояние.", "expected_mode": "action+report", "group": "move_report", "notes": "Tests 'затем'."}
+{"id": "action_report_018", "query": "Остановись и подтверди выполнение.", "expected_mode": "action+report", "group": "stop_report", "notes": "Tests report verb 'подтверди'."}
+{"id": "action_report_019", "query": "Посмотри на стол и дай краткий отчёт.", "expected_mode": "action+report", "group": "head_report", "notes": "Tests report noun."}
+{"id": "action_report_020", "query": "Следуй за человеком, после этого опиши его положение.", "expected_mode": "action+report", "group": "follow_report", "notes": ""}
+{"id": "action_report_021", "query": "Подними голову и скажи, что находится сверху.", "expected_mode": "action+report", "group": "head_report", "notes": ""}
+{"id": "action_report_022", "query": "Положи предмет и сообщи, где он теперь находится.", "expected_mode": "action+report", "group": "manipulation_report", "notes": ""}
+{"id": "action_report_023", "query": "Включи камеру и расскажи, что появилось в кадре.", "expected_mode": "action+report", "group": "camera_report", "notes": ""}
+{"id": "action_report_024", "query": "Отъедь на метр и доложи, когда закончишь.", "expected_mode": "action+report", "group": "move_report", "notes": ""}

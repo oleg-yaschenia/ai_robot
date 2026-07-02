@@ -1,0 +1,48 @@
+{"id": "hold_chat_001", "query": "Что означает фраза «поверни направо»?", "expected_mode": "chat", "group": "quoted_command", "notes": ""}
+{"id": "hold_chat_002", "query": "Он сказал мне: «остановись».", "expected_mode": "chat", "group": "reported_speech", "notes": ""}
+{"id": "hold_chat_003", "query": "Ты можешь поворачивать голову?", "expected_mode": "chat", "group": "capability", "notes": ""}
+{"id": "hold_chat_004", "query": "Почему команда «стоп» не сработала?", "expected_mode": "chat", "group": "quoted_command", "notes": ""}
+{"id": "hold_chat_005", "query": "Как включить подсветку?", "expected_mode": "chat", "group": "how_to", "notes": ""}
+{"id": "hold_chat_006", "query": "Нужно ли говорить «поезжай вперед»?", "expected_mode": "chat", "group": "quoted_command", "notes": ""}
+{"id": "hold_chat_007", "query": "Я не прошу тебя поворачивать.", "expected_mode": "chat", "group": "negated_request", "notes": ""}
+{"id": "hold_chat_008", "query": "Поворот направо безопасен?", "expected_mode": "chat", "group": "general_question", "notes": ""}
+{"id": "hold_chat_009", "query": "Расскажи, как робот останавливается.", "expected_mode": "chat", "group": "explanation", "notes": ""}
+{"id": "hold_chat_010", "query": "Фраза «возьми бутылку» является командой?", "expected_mode": "chat", "group": "quoted_command", "notes": ""}
+{"id": "hold_chat_011", "query": "Что произойдет, если сказать «выключи свет»?", "expected_mode": "chat", "group": "hypothetical", "notes": ""}
+{"id": "hold_chat_012", "query": "Робот, объясни команду «следуй за мной».", "expected_mode": "chat", "group": "quoted_command", "notes": ""}
+{"id": "hold_visual_001", "query": "Что перед тобой?", "expected_mode": "visual_chat", "group": "direct_scene", "notes": ""}
+{"id": "hold_visual_002", "query": "Кого видно в кадре?", "expected_mode": "visual_chat", "group": "direct_scene", "notes": ""}
+{"id": "hold_visual_003", "query": "Видно ли человека?", "expected_mode": "visual_chat", "group": "presence", "notes": ""}
+{"id": "hold_visual_004", "query": "Кто рядом со стулом?", "expected_mode": "visual_chat", "group": "relation", "notes": ""}
+{"id": "hold_visual_005", "query": "Что ближе к камере?", "expected_mode": "visual_chat", "group": "nearest", "notes": ""}
+{"id": "hold_visual_006", "query": "Где сейчас бутылка?", "expected_mode": "visual_chat", "group": "location", "notes": ""}
+{"id": "hold_visual_007", "query": "Много ли людей в комнате?", "expected_mode": "visual_chat", "group": "count", "notes": ""}
+{"id": "hold_visual_008", "query": "Покажи, что находится слева.", "expected_mode": "visual_chat", "group": "location", "notes": ""}
+{"id": "hold_visual_009", "query": "Кто появился в кадре?", "expected_mode": "visual_chat", "group": "change", "notes": ""}
+{"id": "hold_visual_010", "query": "Что исчезло из кадра?", "expected_mode": "visual_chat", "group": "change", "notes": ""}
+{"id": "hold_visual_011", "query": "На каком расстоянии стул?", "expected_mode": "visual_chat", "group": "distance", "notes": ""}
+{"id": "hold_visual_012", "query": "Есть кто-нибудь перед камерой?", "expected_mode": "visual_chat", "group": "presence", "notes": ""}
+{"id": "hold_action_001", "query": "Робот, поверни направо.", "expected_mode": "action", "group": "turn", "notes": ""}
+{"id": "hold_action_002", "query": "Пожалуйста, остановись.", "expected_mode": "action", "group": "stop", "notes": ""}
+{"id": "hold_action_003", "query": "Сейчас включи подсветку.", "expected_mode": "action", "group": "switch", "notes": ""}
+{"id": "hold_action_004", "query": "А теперь отъедь назад.", "expected_mode": "action", "group": "move", "notes": ""}
+{"id": "hold_action_005", "query": "Повернись налево.", "expected_mode": "action", "group": "turn", "notes": ""}
+{"id": "hold_action_006", "query": "Езжай вперед.", "expected_mode": "action", "group": "move", "notes": ""}
+{"id": "hold_action_007", "query": "Иди вперед.", "expected_mode": "action", "group": "move", "notes": ""}
+{"id": "hold_action_008", "query": "Можешь повернуть голову вправо?", "expected_mode": "action", "group": "polite_command", "notes": ""}
+{"id": "hold_action_009", "query": "Не мог бы ты подъехать ближе?", "expected_mode": "action", "group": "polite_command", "notes": ""}
+{"id": "hold_action_010", "query": "Сфотографируй комнату.", "expected_mode": "action", "group": "camera_action", "notes": ""}
+{"id": "hold_action_011", "query": "Опусти голову ниже.", "expected_mode": "action", "group": "head", "notes": ""}
+{"id": "hold_action_012", "query": "Не поворачивай направо.", "expected_mode": "action", "group": "negative_command", "notes": ""}
+{"id": "hold_ar_001", "query": "Робот, повернись и скажи, что видишь.", "expected_mode": "action+report", "group": "turn_report", "notes": ""}
+{"id": "hold_ar_002", "query": "Езжай вперед и сообщи расстояние.", "expected_mode": "action+report", "group": "move_report", "notes": ""}
+{"id": "hold_ar_003", "query": "Можешь подъехать к двери и сказать, что рядом?", "expected_mode": "action+report", "group": "polite_report", "notes": ""}
+{"id": "hold_ar_004", "query": "Посмотри вокруг и дай знать, кто в комнате.", "expected_mode": "action+report", "group": "head_report", "notes": ""}
+{"id": "hold_ar_005", "query": "Сфотографируй стол и назови предметы.", "expected_mode": "action+report", "group": "camera_report", "notes": ""}
+{"id": "hold_ar_006", "query": "Включи свет, затем опиши сцену.", "expected_mode": "action+report", "group": "switch_report", "notes": ""}
+{"id": "hold_ar_007", "query": "Остановись, потом отчитайся.", "expected_mode": "action+report", "group": "stop_report", "notes": ""}
+{"id": "hold_ar_008", "query": "Следуй за мной и уведомь меня, если потеряешь.", "expected_mode": "action+report", "group": "follow_report", "notes": ""}
+{"id": "hold_ar_009", "query": "Подними голову и ответь, что находится сверху.", "expected_mode": "action+report", "group": "head_report", "notes": ""}
+{"id": "hold_ar_010", "query": "Не поворачивайся и скажи, кто справа.", "expected_mode": "action+report", "group": "negative_report", "notes": ""}
+{"id": "hold_ar_011", "query": "Сделай снимок и расскажи, что изменилось.", "expected_mode": "action+report", "group": "camera_report", "notes": ""}
+{"id": "hold_ar_012", "query": "Вернись домой и подтверди, когда закончишь.", "expected_mode": "action+report", "group": "move_report", "notes": ""}
