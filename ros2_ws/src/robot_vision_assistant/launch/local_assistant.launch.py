@@ -220,6 +220,19 @@ def generate_launch_description():
 
         Node(
             package="robot_vision_assistant",
+            executable="assistant_core_shadow_node",
+            name="assistant_core_shadow_node",
+            output="screen",
+            parameters=[
+                {"query_topic": "/vision_assistant/query"},
+                {"plan_topic": "/assistant/core/request_plan_json"},
+                {"clarification_topic": "/assistant/clarification/request_json"},
+                {"max_clarification_attempts": 2},
+            ],
+        ),
+
+        Node(
+            package="robot_vision_assistant",
             executable="vision_assistant_node",
             name="vision_assistant_node",
             output="screen",
