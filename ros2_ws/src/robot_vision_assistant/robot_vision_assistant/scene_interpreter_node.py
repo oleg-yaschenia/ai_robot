@@ -13,7 +13,7 @@ class SceneInterpreterNode(Node):
     def __init__(self):
         super().__init__("scene_interpreter_node")
 
-        self.declare_parameter("input_topic", "/perception/state_json")
+        self.declare_parameter("input_topic", "/perception/entities_json")
         self.declare_parameter("output_topic", "/scene/interpreted_json")
         self.declare_parameter("summary_topic", "/scene/interpreted_summary")
 
@@ -34,12 +34,15 @@ class SceneInterpreterNode(Node):
     def on_state(self, msg: String):
         try:
             raw = json.loads(msg.data)
+            state = self._normalize_input_state(raw)
         except Exception as e:
-            self.get_logger().warning(f"failed to parse perception state: {e}")
+            self.get_logger().warning(
+                f"failed to parse or normalize perception state: {e}"
+            )
             return
 
-        interpreted = self.interpret(raw, self.prev_state)
-        self.prev_state = raw
+        interpreted = self.interpret(state, self.prev_state)
+        self.prev_state = state
 
         out = String()
         out.data = json.dumps(interpreted, ensure_ascii=False)
@@ -48,6 +51,150 @@ class SceneInterpreterNode(Node):
         sm = String()
         sm.data = interpreted.get("human_summary", "")
         self.summary_pub.publish(sm)
+
+    @staticmethod
+    def _normalize_input_state(payload: Dict[str, Any]) -> Dict[str, Any]:
+        if not isinstance(payload, dict):
+            raise TypeError("perception payload must be a dictionary")
+
+        schema = payload.get("schema")
+        if schema != "robot_perception_entities":
+            # Backward-compatible legacy /perception/state_json input.
+            return payload
+
+        if payload.get("schema_version") != 1:
+            raise ValueError(
+                "unsupported perception entity schema version: "
+                f"{payload.get('schema_version')!r}"
+            )
+
+        raw_entities = payload.get("entities")
+        if not isinstance(raw_entities, list):
+            raise ValueError("EntityArray v1 entities must be a list")
+
+        persons = []
+        objects = []
+
+        for entity in raw_entities:
+            if not isinstance(entity, dict):
+                continue
+
+            legacy = SceneInterpreterNode._entity_to_legacy(entity)
+            if entity.get("entity_type") == "person":
+                persons.append(legacy)
+            else:
+                objects.append(legacy)
+
+        counts = payload.get("counts")
+        if not isinstance(counts, dict):
+            counts = {}
+            for entity in persons + objects:
+                label = str(entity.get("class_name", "unknown"))
+                counts[label] = int(counts.get(label, 0)) + 1
+
+        scene_flags = payload.get("scene_flags")
+        if not isinstance(scene_flags, dict):
+            scene_flags = {}
+
+        image_size = payload.get("image_size")
+        if not isinstance(image_size, dict):
+            image_size = {}
+
+        source_timestamp = payload.get("source_timestamp")
+        if source_timestamp is None:
+            source_timestamp = payload.get("timestamp")
+
+        return {
+            "timestamp": source_timestamp,
+            "counts": counts,
+            "scene_flags": scene_flags,
+            "image_size": image_size,
+            "persons": persons,
+            "objects": objects,
+            "source_schema": "robot_perception_entities/v1",
+        }
+
+    @staticmethod
+    def _entity_to_legacy(entity: Dict[str, Any]) -> Dict[str, Any]:
+        bbox = entity.get("bbox")
+        if not isinstance(bbox, dict):
+            bbox = {}
+        bbox_xyxy = bbox.get("coordinates")
+        if not isinstance(bbox_xyxy, list) or len(bbox_xyxy) != 4:
+            bbox_xyxy = [0, 0, 0, 0]
+
+        image_geometry = entity.get("image_geometry")
+        if not isinstance(image_geometry, dict):
+            image_geometry = {}
+
+        center_xy = image_geometry.get("center_xy")
+        if not isinstance(center_xy, list) or len(center_xy) != 2:
+            center_xy = None
+
+        size_wh = image_geometry.get("size_wh")
+        if not isinstance(size_wh, list) or len(size_wh) != 2:
+            size_wh = None
+
+        distance = entity.get("distance")
+        if not isinstance(distance, dict):
+            distance = {}
+
+        spatial = entity.get("spatial")
+        if not isinstance(spatial, dict):
+            spatial = {}
+
+        tracking = entity.get("tracking")
+        if not isinstance(tracking, dict):
+            tracking = {}
+
+        distance_m = distance.get("meters")
+        distance_valid = bool(
+            distance.get("valid") and distance_m is not None
+        )
+
+        legacy = {
+            "entity_id": entity.get("entity_id"),
+            "track_id": entity.get("track_id"),
+            "class_name": entity.get("label", "object"),
+            "semantic_group": entity.get("semantic_group"),
+            "semantic_status": entity.get("semantic_status"),
+            "confidence": entity.get("semantic_confidence"),
+            "confirmed": entity.get("semantic_status") == "confirmed",
+            "bbox_xyxy": bbox_xyxy,
+            "distance_m": distance_m if distance_valid else None,
+            "distance_valid": distance_valid,
+            "depth_confidence": distance.get("confidence", "none"),
+            "depth_status": distance.get("status", "unavailable"),
+            "depth_source": distance.get("source"),
+            "depth_samples": distance.get("samples"),
+            "depth_valid_ratio": distance.get("valid_ratio"),
+            "side": spatial.get("horizontal"),
+            "proximity_hint": spatial.get("proximity"),
+            "spatial": {
+                "horizontal": spatial.get("horizontal"),
+                "vertical": spatial.get("vertical"),
+                "proximity": spatial.get("proximity"),
+                "metric_distance_available": bool(
+                    spatial.get(
+                        "metric_distance_available",
+                        distance_valid,
+                    )
+                ),
+            },
+            "position_3d": entity.get("position_3d"),
+            "hits": tracking.get("hits"),
+            "consecutive_hits": tracking.get("consecutive_hits"),
+            "missed_frames": tracking.get("missed_frames"),
+            "velocity_xy": tracking.get("velocity_xy"),
+            "source": entity.get("source"),
+        }
+
+        if center_xy is not None:
+            legacy["center_xy"] = center_xy
+        if size_wh is not None:
+            legacy["size_wh"] = size_wh
+
+        return legacy
 
     def interpret(self, state: Dict[str, Any], prev_state: Optional[Dict[str, Any]]) -> Dict[str, Any]:
         persons = state.get("persons", [])
@@ -127,7 +274,9 @@ class SceneInterpreterNode(Node):
         bh = max(0, y2 - y1)
         area = bw * bh
 
-        out["entity_id"] = entity_id
+        out["entity_id"] = str(
+            ent.get("entity_id") or entity_id
+        )
         out["class_name"] = label
         out["center_xy"] = [cx, cy]
         out["size_wh"] = [bw, bh]

@@ -40,6 +40,7 @@ EXPECTED_NODES = {
     "/camera/right/right_rectify",
     "/esp32_bridge_node",
     "/head_state_manager",
+    "/perception_entity_adapter_node",
     "/scene_interpreter_node",
     "/stereo_camera_node",
     "/stereo_disparity",
@@ -52,6 +53,7 @@ EXPECTED_NODES = {
 
 CRITICAL_NODES = {
     "/esp32_bridge_node",
+    "/perception_entity_adapter_node",
     "/stereo_camera_node",
     "/stereo_disparity",
     "/voice_manager_node",

@@ -304,6 +304,10 @@ def build_entity_array(
     if source_timestamp is None:
         source_timestamp = state.get("source_timestamp")
 
+    scene_flags = state.get("scene_flags")
+    if not isinstance(scene_flags, dict):
+        scene_flags = {}
+
     return {
         "schema": SCHEMA_NAME,
         "schema_version": SCHEMA_VERSION,
@@ -316,6 +320,7 @@ def build_entity_array(
         },
         "entity_count": len(entities),
         "counts": counts,
+        "scene_flags": scene_flags,
         "entities": entities,
         "source": {
             "topic": source_topic,

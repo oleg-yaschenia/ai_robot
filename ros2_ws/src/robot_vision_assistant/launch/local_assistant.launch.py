@@ -14,6 +14,7 @@ def generate_launch_description():
     yolo_fallback_model_path = LaunchConfiguration(
         "yolo_fallback_model_path"
     )
+    scene_input_topic = LaunchConfiguration("scene_input_topic")
     snapshots_dir = LaunchConfiguration("snapshots_dir")
     db_path = LaunchConfiguration("db_path")
     piper_bin = LaunchConfiguration("piper_bin")
@@ -112,6 +113,15 @@ def generate_launch_description():
             ]),
         ),
 
+        DeclareLaunchArgument(
+            "scene_input_topic",
+            default_value="/perception/entities_json",
+            description=(
+                "Scene interpreter input. Use "
+                "/perception/state_json for legacy rollback."
+            ),
+        ),
+
         Node(
             package="robot_vision_assistant",
             executable="yolo_perception_node",
@@ -188,7 +198,7 @@ def generate_launch_description():
             name="scene_interpreter_node",
             output="screen",
             parameters=[
-                {"input_topic": "/perception/state_json"},
+                {"input_topic": scene_input_topic},
                 {"output_topic": "/scene/interpreted_json"},
                 {"summary_topic": "/scene/interpreted_summary"},
                 {"change_iou_threshold": 0.35},

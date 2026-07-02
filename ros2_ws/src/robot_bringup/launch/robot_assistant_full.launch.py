@@ -20,6 +20,7 @@ def generate_launch_description():
     yolo_fallback_model_path = LaunchConfiguration(
         "yolo_fallback_model_path"
     )
+    scene_input_topic = LaunchConfiguration("scene_input_topic")
 
     robot_base = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -48,6 +49,7 @@ def generate_launch_description():
             "project_root": project_root,
             "yolo_model_path": yolo_model_path,
             "yolo_fallback_model_path": yolo_fallback_model_path,
+            "scene_input_topic": scene_input_topic,
         }.items(),
     )
 
@@ -116,6 +118,14 @@ def generate_launch_description():
             description=(
                 "Fallback YOLO model used when the preferred model "
                 "cannot be loaded or warmed up."
+            ),
+        ),
+        DeclareLaunchArgument(
+            "scene_input_topic",
+            default_value="/perception/entities_json",
+            description=(
+                "Scene interpreter input. Use "
+                "/perception/state_json for legacy rollback."
             ),
         ),
         robot_base,
