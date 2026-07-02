@@ -43,7 +43,6 @@ class VisionAssistantNode(Node):
         self.last_frame_bgr = None
         self.last_scene_summary = "У меня пока нет данных о сцене."
         self.last_interpreted = {}
-        self.last_raw_state = {}
 
         self.last_question = ""
         self.last_answer = ""
@@ -59,9 +58,6 @@ class VisionAssistantNode(Node):
         )
         self.interpreted_sub = self.create_subscription(
             String, "/scene/interpreted_json", self.interpreted_cb, 10
-        )
-        self.raw_state_sub = self.create_subscription(
-            String, "/perception/state_json", self.raw_state_cb, 10
         )
         self.query_sub = self.create_subscription(
             String, "/vision_assistant/query", self.query_cb, 10
@@ -122,15 +118,16 @@ class VisionAssistantNode(Node):
 
     def interpreted_cb(self, msg: String):
         try:
-            self.last_interpreted = json.loads(msg.data)
+            parsed = json.loads(msg.data)
+            if not isinstance(parsed, dict):
+                raise ValueError(
+                    "interpreted scene payload must be a JSON object"
+                )
+            self.last_interpreted = parsed
         except Exception as e:
-            self.get_logger().warning(f"failed to parse interpreted_json: {e}")
-
-    def raw_state_cb(self, msg: String):
-        try:
-            self.last_raw_state = json.loads(msg.data)
-        except Exception as e:
-            self.get_logger().warning(f"failed to parse raw perception state_json: {e}")
+            self.get_logger().warning(
+                f"failed to parse interpreted_json: {e}"
+            )
 
     def query_cb(self, msg: String):
         question = msg.data.strip()
@@ -150,7 +147,8 @@ class VisionAssistantNode(Node):
         return q.strip().lower().replace("ё", "е")
 
     def counts(self):
-        return self.last_interpreted.get("counts", self.last_raw_state.get("counts", {}))
+        counts = self.last_interpreted.get("counts", {})
+        return counts if isinstance(counts, dict) else {}
 
     def persons(self):
         return self.last_interpreted.get("persons", [])
