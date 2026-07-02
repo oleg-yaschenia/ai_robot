@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "tool_version": "baseline-guardian-v1",
+  "baseline_name": "assistant_router_shadow_v1",
+  "created_at_utc": "2026-07-02T17:21:19.347261+00:00",
+  "source_snapshot": "/home/warxen/ai_robot_artifacts/robot_doctor/snapshots/20260702T172043Z",
+  "source_collected_at_utc": "2026-07-02T17:21:05.091400+00:00",
+  "host": "jetson",
+  "repo_root": "/home/warxen/ai_robot",
+  "git": {
+    "branch": "feature/assistant-core-v2-router",
+    "commit": "948b11b1846e7927fe4c017a31e71e52bf198054",
+    "describe": "assistant-scene-api-v1-2-g948b11b"
+  },
+  "health": {
+    "overall_status": "OK",
+    "counts": {
+      "OK": 10,
+      "WARNING": 0,
+      "ERROR": 0
+    }
+  },
+  "required_nodes": [
+    "/asr_node",
+    "/assistant_router_node",
+    "/camera/left/left_rectify",
+    "/camera/right/right_rectify",
+    "/esp32_bridge_node",
+    "/head_state_manager",
+    "/perception_entity_adapter_node",
+    "/scene_interpreter_node",
+    "/stereo_camera_node",
+    "/stereo_disparity",
+    "/tts_node",
+    "/vision_assistant_node",
+    "/voice_led_bridge_node",
+    "/voice_manager_node",
+    "/yolo_perception_node"
+  ],
+  "important_file_sha256": {
+    "ros2_ws/src/robot_camera/launch/stereo_disparity.launch.py": "b42ca725612ea3090fbe7b3d6335c88319d65ad13c1c7470b300da435cfebf08",
+    "ros2_ws/src/robot_vision_assistant/launch/local_assistant.launch.py": "d8351aac74e81483c33db110c363c573521a7e1fa04c4323478f563451fd2938",
+    "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/yolo_perception_node.py": "9cbb27bfc38eebe5426a5e3b4c69754498d4bda86f6cdbcc6af1f4e20dff6d1c"
+  },
+  "python_packages": {
+    "torch": "2.8.0",
+    "torchvision": "0.23.0",
+    "ultralytics": "8.4.80",
+    "numpy": "1.26.1"
+  },
+  "ros_package_prefixes": {
+    "robot_audio": "/home/warxen/ai_robot/ros2_ws/install/robot_audio",
+    "robot_bringup": "/home/warxen/ai_robot/ros2_ws/install/robot_bringup",
+    "robot_camera": "/home/warxen/ai_robot/ros2_ws/install/robot_camera",
+    "robot_esp32_bridge": "/home/warxen/ai_robot/ros2_ws/install/robot_esp32_bridge",
+    "robot_vision_assistant": "/home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant"
+  },
+  "runtime_reference": {
+    "memory_available_bytes": 2788986880,
+    "root_disk_used_percent": 7,
+    "home_disk_used_percent": 7
+  },
+  "comparison_policy": {
+    "missing_required_node": "ERROR",
+    "important_file_hash_change": "ERROR",
+    "python_package_version_change": "WARNING",
+    "ros_package_prefix_change": "WARNING",
+    "memory_drop_warning_fraction": 0.25,
+    "memory_drop_error_fraction": 0.5,
+    "disk_growth_warning_percentage_points": 10,
+    "disk_growth_error_percentage_points": 25
+  }
+}

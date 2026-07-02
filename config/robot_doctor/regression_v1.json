@@ -15,7 +15,7 @@
     "ros2_ws/src/robot_audio",
     "ros2_ws/src/robot_esp32_bridge"
   ],
-  "baseline_path": "config/robot_doctor/baselines/perception_entity_api_v1.json",
+  "baseline_path": "config/robot_doctor/baselines/assistant_router_shadow_v1.json",
   "syntax_timeout_sec": 120,
   "build_timeout_sec": 600,
   "health_timeout_sec": 120,
