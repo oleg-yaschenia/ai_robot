@@ -173,6 +173,17 @@ def generate_launch_description():
 
         Node(
             package="robot_vision_assistant",
+            executable="perception_entity_adapter_node",
+            name="perception_entity_adapter_node",
+            output="screen",
+            parameters=[
+                {"input_topic": "/perception/state_json"},
+                {"output_topic": "/perception/entities_json"},
+            ],
+        ),
+
+        Node(
+            package="robot_vision_assistant",
             executable="scene_interpreter_node",
             name="scene_interpreter_node",
             output="screen",
