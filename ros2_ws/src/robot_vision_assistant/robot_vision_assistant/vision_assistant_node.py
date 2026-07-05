@@ -16,6 +16,13 @@ class VisionAssistantNode(Node):
         super().__init__("vision_assistant_node")
 
         self.declare_parameter("image_topic", "/camera/left/image_raw")
+        self.declare_parameter("query_topic", "/vision_assistant/query")
+        self.declare_parameter("answer_topic", "/vision_assistant/answer")
+        self.declare_parameter(
+            "candidate_topic", "/vision_assistant/legacy_candidate_json"
+        )
+        self.declare_parameter("status_topic", "/vision_assistant/status")
+        self.declare_parameter("record_interactions", True)
         self.declare_parameter("mode", "local_only")
         self.declare_parameter("allow_cloud", False)
         self.declare_parameter("allow_realtime", False)
@@ -29,6 +36,15 @@ class VisionAssistantNode(Node):
         )
 
         self.image_topic = str(self.get_parameter("image_topic").value)
+        self.query_topic = str(self.get_parameter("query_topic").value)
+        self.answer_topic = str(self.get_parameter("answer_topic").value)
+        self.candidate_topic = str(
+            self.get_parameter("candidate_topic").value
+        )
+        self.status_topic = str(self.get_parameter("status_topic").value)
+        self.record_interactions = bool(
+            self.get_parameter("record_interactions").value
+        )
         self.mode = str(self.get_parameter("mode").value)
         self.allow_cloud = bool(self.get_parameter("allow_cloud").value)
         self.allow_realtime = bool(self.get_parameter("allow_realtime").value)
@@ -60,19 +76,28 @@ class VisionAssistantNode(Node):
             String, "/scene/interpreted_json", self.interpreted_cb, 10
         )
         self.query_sub = self.create_subscription(
-            String, "/vision_assistant/query", self.query_cb, 10
+            String, self.query_topic, self.query_cb, 10
         )
         self.mode_sub = self.create_subscription(
             String, "/vision_assistant/set_mode", self.mode_cb, 10
         )
 
-        self.answer_pub = self.create_publisher(String, "/vision_assistant/answer", 10)
-        self.status_pub = self.create_publisher(String, "/vision_assistant/status", 10)
+        self.answer_pub = self.create_publisher(String, self.answer_topic, 10)
+        self.candidate_pub = self.create_publisher(
+            String, self.candidate_topic, 10
+        )
+        self.status_pub = self.create_publisher(String, self.status_topic, 10)
 
         self.publish_status(
-            f"vision_assistant started in mode={self.mode}, image_topic={self.image_topic}"
+            f"vision_assistant started in mode={self.mode}, "
+            f"image_topic={self.image_topic}, answer_topic={self.answer_topic}"
         )
-        self.get_logger().info(f"vision_assistant_node started: mode={self.mode}")
+        self.get_logger().info(
+            "vision_assistant_node started: "
+            f"mode={self.mode}, query={self.query_topic}, "
+            f"answer={self.answer_topic}, "
+            f"record_interactions={self.record_interactions}"
+        )
 
     def publish_status(self, text: str):
         msg = String()
@@ -130,16 +155,46 @@ class VisionAssistantNode(Node):
             )
 
     def query_cb(self, msg: String):
-        question = msg.data.strip()
+        raw = (msg.data or "").strip()
+        if not raw:
+            return
+
+        request_id = ""
+        question = raw
+        if raw.startswith("{"):
+            try:
+                payload = json.loads(raw)
+                if not isinstance(payload, dict):
+                    raise ValueError("query JSON must be an object")
+                request_id = str(payload.get("request_id", "")).strip()
+                question = str(payload.get("query", "")).strip()
+            except Exception as exc:
+                self.get_logger().warning(f"invalid query JSON: {exc}")
+                return
         if not question:
             return
 
         answer = self.build_answer(question)
         self.publish_answer(answer)
+        candidate = String()
+        candidate.data = json.dumps(
+            {
+                "schema": "assistant_response_candidate",
+                "schema_version": 1,
+                "request_id": request_id,
+                "source": "legacy_scene",
+                "success": True,
+                "answer": answer,
+            },
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
+        self.candidate_pub.publish(candidate)
 
         self.last_question = question
         self.last_answer = answer
-        self.memory.add_interaction(self.mode, question, answer, "")
+        if self.record_interactions:
+            self.memory.add_interaction(self.mode, question, answer, "")
 
     # ---------- helpers ----------
 
