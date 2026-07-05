@@ -727,15 +727,18 @@ def collect(repo_root: Path, output_root: Path) -> Path:
         )
 
     important_files = [
-        repo_root
-        / "ros2_ws/src/robot_camera/launch/stereo_disparity.launch.py",
-        repo_root
-        / "ros2_ws/src/robot_vision_assistant/launch/local_assistant.launch.py",
-        repo_root
-        / (
-            "ros2_ws/src/robot_vision_assistant/"
-            "robot_vision_assistant/yolo_perception_node.py"
-        ),
+        repo_root / "ros2_ws/src/robot_camera/launch/stereo_disparity.launch.py",
+        repo_root / "ros2_ws/src/robot_bringup/launch/robot_assistant_full.launch.py",
+        repo_root / "ros2_ws/src/robot_vision_assistant/launch/local_assistant.launch.py",
+        repo_root / "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/assistant_response_contract.py",
+        repo_root / "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/qwen_vl_runtime_node.py",
+        repo_root / "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/response_orchestrator.py",
+        repo_root / "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/response_orchestrator_node.py",
+        repo_root / "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/vision_assistant_node.py",
+        repo_root / "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/yolo_perception_node.py",
+        repo_root / "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/yolo_tensorrt_node.py",
+        repo_root / "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/yolo_tensorrt_runtime.py",
+        repo_root / "ros2_ws/src/robot_vision_assistant/setup.py",
     ]
 
     files_meta: list[dict[str, Any]] = []

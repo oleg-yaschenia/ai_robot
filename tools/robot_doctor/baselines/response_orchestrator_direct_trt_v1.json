@@ -2,15 +2,15 @@
   "schema_version": 1,
   "tool_version": "baseline-guardian-v1",
   "baseline_name": "response-orchestrator-direct-trt-v1",
-  "created_at_utc": "2026-07-05T19:17:00.774412+00:00",
-  "source_snapshot": "/home/warxen/ai_robot_artifacts/robot_doctor/snapshots/20260705T191634Z",
-  "source_collected_at_utc": "2026-07-05T19:17:00.358376+00:00",
+  "created_at_utc": "2026-07-05T19:24:49.140174+00:00",
+  "source_snapshot": "/home/warxen/ai_robot_artifacts/robot_doctor/snapshots/20260705T192423Z",
+  "source_collected_at_utc": "2026-07-05T19:24:48.764494+00:00",
   "host": "jetson",
   "repo_root": "/home/warxen/ai_robot",
   "git": {
     "branch": "feature/local-model-selection-v1",
-    "commit": "d4572d48001b05e76cff19c1c3c9de2e8a0c6c58",
-    "describe": "assistant-core-request-resolver-v1-1-gd4572d4-dirty"
+    "commit": "23d1c63640b0462b4d24829b7655151a11be39b5",
+    "describe": "assistant-core-request-resolver-v1-2-g23d1c63-dirty"
   },
   "health": {
     "overall_status": "WARNING",
@@ -42,8 +42,17 @@
   ],
   "important_file_sha256": {
     "ros2_ws/src/robot_camera/launch/stereo_disparity.launch.py": "b42ca725612ea3090fbe7b3d6335c88319d65ad13c1c7470b300da435cfebf08",
+    "ros2_ws/src/robot_bringup/launch/robot_assistant_full.launch.py": "4ee422e0e0083354ce33c241ea7fc8e306c52ecc93f9744cdd15836d6f2a599d",
     "ros2_ws/src/robot_vision_assistant/launch/local_assistant.launch.py": "1ee5216ebd347c3742f4f28c0c908bda89f571fc86df06e1a46d98cf6672fc43",
-    "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/yolo_perception_node.py": "9cbb27bfc38eebe5426a5e3b4c69754498d4bda86f6cdbcc6af1f4e20dff6d1c"
+    "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/assistant_response_contract.py": "320ea1de93d5c08065986757ec76e22773996e9798e9e72733fc0a7a40d9d9b6",
+    "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/qwen_vl_runtime_node.py": "36adac73b32a74b0c015a651ca953aca979a3615db52b030fe71d69ed2f3e06c",
+    "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/response_orchestrator.py": "804c3573cf09db502e18362ed230497f55180c6c10917b6f7bfaf7665d00c2a7",
+    "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/response_orchestrator_node.py": "e48433122a7c17c7ab43d52142c5b196feb3d015e29ab88cd78f9e6f1dab8e55",
+    "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/vision_assistant_node.py": "f2f4e0c3229bbdb78281f360a0c45822ce4450c8eabbe9ba919ba165e796d487",
+    "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/yolo_perception_node.py": "9cbb27bfc38eebe5426a5e3b4c69754498d4bda86f6cdbcc6af1f4e20dff6d1c",
+    "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/yolo_tensorrt_node.py": "d7da20180ff49af1ce88cc4ee71b52ceae38a10ca8ccde0771bfacfb8b1cb234",
+    "ros2_ws/src/robot_vision_assistant/robot_vision_assistant/yolo_tensorrt_runtime.py": "4da2d51008566b2e88cffd5a28d9d1074581a9e3f4df3713195f36bd24862062",
+    "ros2_ws/src/robot_vision_assistant/setup.py": "a26d47ec7a5f6c0e9e05b832530b8cc9e3f558a69cde3e76c4458b5d4d3dda78"
   },
   "python_packages": {
     "torch": "2.8.0",
@@ -59,7 +68,7 @@
     "robot_vision_assistant": "/home/warxen/ai_robot/ros2_ws/install/robot_vision_assistant"
   },
   "runtime_reference": {
-    "memory_available_bytes": 1211875328,
+    "memory_available_bytes": 1347760128,
     "root_disk_used_percent": 7,
     "home_disk_used_percent": 7
   },
