@@ -15,9 +15,6 @@
 #* FileName & Location: ~/camera_overrides.isp
 #* Updated:Thu Oct 21 17:35:20 2018 PST
 #* =============================================================
-                 0.5, 0.5, 0.5, 0.5,
-                 0.5, 0.5, 0.5, 0.5,
-                 0.5, 0.5, 0.5, 0.5 };
 # Sensor specific values
 # em.preset[0].exposureControl.exposureTime = {sensor_long_exposure, sensor_short_exposure, sensor_veryshot_exposure};
 # em.preset[0].exposureControl.sensorGain = {gain_long, gain_short, gain_veryshort}; 

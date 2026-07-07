@@ -1,25 +1,78 @@
-line 18: sensor.companding.enable = TRUE;
-line 19: sensor.companding.LUT = {2048, 2048,  65536, 3040,  1048576, 4000,  1048576, 4096};
-line 20: scene.brightnessKey = {0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1};
-line 21: scene.toneTable.axisX = {10, 100, 1000, 10000};
-line 22: scene.toneTable.axisY = {30, 60, 90, 120};
-line 23: saturation.strength     = {0.0, 0, 0, 0, 0, 0, 0};
-line 24: noiseReduction.strength = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5};
-line 25: sharpness.strength      = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5};
-line 26: gtm.enable = TRUE;
-line 27: gtm.preset[0] = {0, 0,  0.25, 0.25,  0.5, 0.5,  0.75, 0.75,  1, 1};
-line 28: dae.mode = 1;
-line 29: dae.enableGammaPQ = TRUE;
-line 30: dae.EVCompensation = 0.0;
-line 31: dae.highlightControl = 0.5;
-line 32: dae.shadowControl = 0.5;
-line 33: ltm.enable = TRUE;
-line 34: ltm.enableLf = TRUE;
-line 35: ltm.strength = { 0.5, 0.5, 0.5, 0.5,
-line 39: awb.nightmode.enable = TRUE;
-line 40: awb.nightmode.gains = {2.5, 1, 1, 3.2};
-line 41: em.initialState = 0;
-line 42: em.thresholdLow = 2080;
-line 43: em.thresholdHigh = 3232;
-line 47: em.preset[0].wbgains = {1.5, 1.0, 1.0, 1.5};
-line 51: em.preset[1].wbgains = {1.5, 1.0, 1.0, 1.5};
+===== sensor.companding.enable, original line 18 =====
+sensor.companding.enable = TRUE;
+
+===== sensor.companding.LUT, original line 19 =====
+sensor.companding.LUT = {2048, 2048,  65536, 3040,  1048576, 4000,  1048576, 4096};
+
+===== scene.brightnessKey, original line 20 =====
+scene.brightnessKey = {0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1};
+
+===== scene.toneTable.axisX, original line 21 =====
+scene.toneTable.axisX = {10, 100, 1000, 10000};
+
+===== scene.toneTable.axisY, original line 22 =====
+scene.toneTable.axisY = {30, 60, 90, 120};
+
+===== saturation.strength, original line 23 =====
+saturation.strength     = {0.0, 0, 0, 0, 0, 0, 0};
+
+===== noiseReduction.strength, original line 24 =====
+noiseReduction.strength = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5};
+
+===== sharpness.strength, original line 25 =====
+sharpness.strength      = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5};
+
+===== gtm.enable, original line 26 =====
+gtm.enable = TRUE;
+
+===== gtm.preset[0], original line 27 =====
+gtm.preset[0] = {0, 0,  0.25, 0.25,  0.5, 0.5,  0.75, 0.75,  1, 1};
+
+===== dae.mode, original line 28 =====
+dae.mode = 1;
+
+===== dae.enableGammaPQ, original line 29 =====
+dae.enableGammaPQ = TRUE;
+
+===== dae.EVCompensation, original line 30 =====
+dae.EVCompensation = 0.0;
+
+===== dae.highlightControl, original line 31 =====
+dae.highlightControl = 0.5;
+
+===== dae.shadowControl, original line 32 =====
+dae.shadowControl = 0.5;
+
+===== ltm.enable, original line 33 =====
+ltm.enable = TRUE;
+
+===== ltm.enableLf, original line 34 =====
+ltm.enableLf = TRUE;
+
+===== ltm.strength, original line 35 =====
+ltm.strength = { 0.5, 0.5, 0.5, 0.5,
+                 0.5, 0.5, 0.5, 0.5,
+                 0.5, 0.5, 0.5, 0.5,
+                 0.5, 0.5, 0.5, 0.5 };
+
+===== awb.nightmode.enable, original line 39 =====
+awb.nightmode.enable = TRUE;
+
+===== awb.nightmode.gains, original line 40 =====
+awb.nightmode.gains = {2.5, 1, 1, 3.2};
+
+===== em.initialState, original line 41 =====
+em.initialState = 0;
+
+===== em.thresholdLow, original line 42 =====
+em.thresholdLow = 2080;
+
+===== em.thresholdHigh, original line 43 =====
+em.thresholdHigh = 3232;
+
+===== em.preset[0].wbgains, original line 47 =====
+em.preset[0].wbgains = {1.5, 1.0, 1.0, 1.5};
+
+===== em.preset[1].wbgains, original line 51 =====
+em.preset[1].wbgains = {1.5, 1.0, 1.0, 1.5};
+
