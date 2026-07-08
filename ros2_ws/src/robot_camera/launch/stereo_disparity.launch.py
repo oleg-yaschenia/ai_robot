@@ -24,14 +24,22 @@ def generate_launch_description():
                 "queue_size": 5,
             }],
             remappings=[
-                # The current camera topics are physically reversed.
-                # Use the physical-left rectified image as the left view.
-                # CameraInfo stays in conventional stereo order so the
-                # right projection matrix continues to provide Tx/baseline.
-                ("left/image_rect", "/camera/right/image_rect"),
-                ("left/camera_info", "/camera/left/camera_info"),
-                ("right/image_rect", "/camera/left/image_rect"),
-                ("right/camera_info", "/camera/right/camera_info"),
+                (
+                    "left/image_rect",
+                    "/camera/left/image_rect",
+                ),
+                (
+                    "left/camera_info",
+                    "/camera/left/camera_info",
+                ),
+                (
+                    "right/image_rect",
+                    "/camera/right/image_rect",
+                ),
+                (
+                    "right/camera_info",
+                    "/camera/right/camera_info",
+                ),
             ],
-        )
+        ),
     ])

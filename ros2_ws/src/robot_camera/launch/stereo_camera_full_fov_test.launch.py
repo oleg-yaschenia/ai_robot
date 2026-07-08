@@ -15,8 +15,8 @@ def generate_launch_description():
             name="stereo_camera_node",
             output="screen",
             parameters=[
-                {"left_sensor_id": 0},
-                {"right_sensor_id": 1},
+                {"left_sensor_id": 1},
+                {"right_sensor_id": 0},
 
                 {"sensor_mode": 3},
                 {"sensor_width": 1640},
@@ -31,7 +31,15 @@ def generate_launch_description():
                 {"ee_strength": -1.0},
 
                 # Старые YAML относятся к 1280x720.
-                {"publish_camera_info": False},
+                {"publish_camera_info": True},
+                {
+                    "left_camera_info_yaml":
+                    "/home/warxen/ai_robot/calib/stereo_1024x768/left.yaml"
+                },
+                {
+                    "right_camera_info_yaml":
+                    "/home/warxen/ai_robot/calib/stereo_1024x768/right.yaml"
+                },
 
                 {
                     "left_frame_id":
