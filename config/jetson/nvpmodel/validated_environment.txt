@@ -1,0 +1,13 @@
+Saved: 2026-07-10T16:48:32+03:00
+
+nvpmodel config: /etc/nvpmodel/nvpmodel_p3767_0003_super.conf
+
+# R36 (release), REVISION: 5.0, GCID: 43688277, BOARD: generic, EABI: aarch64, DATE: Fri Jan 16 03:50:45 UTC 2026
+# KERNEL_VARIANT: oot
+TARGET_USERSPACE_LIB_DIR=nvidia
+TARGET_USERSPACE_LIB_DIR_PATH=usr/lib/aarch64-linux-gnu/nvidia
+
+NV Power Mode: 25W_BALANCE
+3
+
+a957aec5aa1d48d04d34964f5ec71893012a4f199253aa5c31bea050270a6ed1  /etc/nvpmodel/nvpmodel_p3767_0003_super.conf
