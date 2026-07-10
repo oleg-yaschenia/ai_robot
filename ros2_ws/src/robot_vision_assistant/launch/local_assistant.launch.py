@@ -514,7 +514,8 @@ def generate_launch_description():
             output="screen",
             condition=yolo_tensorrt_condition,
             parameters=[
-                {"image_topic": "/camera/right/image_rect"},
+                {"image_topic": "/camera/right/image_rect_yolo"},
+                {"depth_topic": "/disparity"},
                 {"model_path": yolo_model_path},
                 {"fallback_model_path": yolo_model_path},
                 {"device": "0"},
@@ -684,7 +685,7 @@ def generate_launch_description():
             name="vision_assistant_node",
             output="screen",
             parameters=[
-                {"image_topic": "/camera/right/image_rect"},
+                {"image_topic": "/vision_assistant/unused_image"},
                 {"query_topic": legacy_runtime_query_topic},
                 {"answer_topic": legacy_runtime_answer_topic},
                 {"candidate_topic": response_legacy_candidate_topic},

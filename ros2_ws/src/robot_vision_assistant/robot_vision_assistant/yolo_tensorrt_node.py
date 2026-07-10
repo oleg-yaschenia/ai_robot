@@ -2,7 +2,6 @@
 
 import json
 import time
-from collections import deque
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -272,13 +271,25 @@ class YoloTensorRTNode(Node):
         )
 
         self.bridge = CvBridge()
-        self.last_frame_bgr = None
-        self.last_frame_stamp_sec: Optional[float] = None
-        self.last_frame_id = ""
+        self.last_image_msg: Optional[Image] = None
+        self.last_processed_image_stamp_ns: Optional[int] = None
+        self.duplicate_image_skips = 0
         self.last_result_state = None
+
+        # Source-side diagnostics. These counters measure what this node
+        # actually receives and publishes without adding a ROS subscriber.
+        self.image_callback_count = 0
+        self.successful_publish_count = 0
+        self.image_conversion_failures = 0
+        self.inference_failures = 0
+        self._rate_window_started = time.perf_counter()
+        self._rate_window_callbacks = 0
+        self._rate_window_publishes = 0
+        self._rate_window_callback_total_ms = 0.0
+        self._rate_window_callback_max_ms = 0.0
         self._warmed_up = False
         self.previous_motion_gray = None
-        self.disparity_frames = deque(maxlen=6)
+        self.last_disparity_msg: Optional[DisparityImage] = None
 
         self.active_model_path = ""
         self.inference_backend = "unknown"
@@ -289,17 +300,26 @@ class YoloTensorRTNode(Node):
         self.tracks: Dict[int, Dict[str, Any]] = {}
         self.next_track_id = 1
 
+        # The gated stream is only 4 Hz and has a single consumer.
+        # Use RELIABLE delivery here so large local Image messages are not
+        # silently lost between the C++ gate and this Python node.
+        image_qos = QoSProfile(
+            history=HistoryPolicy.KEEP_LAST,
+            depth=1,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.VOLATILE,
+        )
         self.image_sub = self.create_subscription(
             Image,
             self.image_topic,
             self.image_cb,
-            qos_profile_sensor_data,
+            image_qos,
         )
 
         depth_qos = QoSProfile(
             history=HistoryPolicy.KEEP_LAST,
-            depth=2,
-            reliability=ReliabilityPolicy.RELIABLE,
+            depth=1,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
             durability=DurabilityPolicy.VOLATILE,
         )
         self.depth_sub = self.create_subscription(
@@ -345,10 +365,11 @@ class YoloTensorRTNode(Node):
             10,
         )
 
-        self.timer = self.create_timer(
-            self.analysis_period_sec,
-            self.timer_cb,
-        )
+        # Inference is triggered by a fresh gated image instead of an
+        # independent periodic timer. This avoids timer/subscription phase
+        # races and guarantees that one TensorRT run corresponds to one new
+        # image timestamp.
+        self.timer = None
 
         self.get_logger().info(
             "yolo_perception_node direct-trt-v1 started: "
@@ -357,7 +378,7 @@ class YoloTensorRTNode(Node):
             f"backend={self.inference_backend}, "
             f"fallback_used={self.fallback_used}, "
             f"device={self.device}, imgsz={self.imgsz}, "
-            f"period={self.analysis_period_sec}s, "
+            f"period={self.analysis_period_sec}s, trigger=image_callback, "
             f"nms_iou={self.iou_threshold}"
         )
 
@@ -578,6 +599,10 @@ class YoloTensorRTNode(Node):
         return float(stamp.sec) + float(stamp.nanosec) * 1e-9
 
     @staticmethod
+    def _stamp_to_ns(stamp) -> int:
+        return int(stamp.sec) * 1_000_000_000 + int(stamp.nanosec)
+
+    @staticmethod
     def _disparity_array(msg: DisparityImage) -> np.ndarray:
         image = msg.image
         if image.encoding not in {"32FC1", "32FC"}:
@@ -597,48 +622,49 @@ class YoloTensorRTNode(Node):
         if not self.depth_enabled:
             return
 
-        try:
-            disparity = self._disparity_array(msg).copy()
-        except Exception as exc:
-            self.get_logger().warning(
-                f"disparity conversion failed: {exc}"
-            )
-            return
-
-        self.disparity_frames.append({
-            "stamp_sec": self._stamp_to_sec(msg.header.stamp),
-            "frame_id": msg.header.frame_id,
-            "array": disparity,
-            "focal_px": float(msg.f),
-            "baseline_m": abs(float(msg.t)),
-            "min_disparity": float(msg.min_disparity),
-            "max_disparity": float(msg.max_disparity),
-        })
+        # Keep only the newest ROS message. Do not convert or copy the
+        # full float32 disparity image in the subscription callback.
+        self.last_disparity_msg = msg
 
     def _nearest_disparity(
         self,
         image_stamp_sec: Optional[float],
     ) -> Optional[Dict[str, Any]]:
+        msg = self.last_disparity_msg
         if (
             not self.depth_enabled
             or image_stamp_sec is None
-            or not self.disparity_frames
+            or msg is None
         ):
             return None
 
-        best = min(
-            self.disparity_frames,
-            key=lambda item: abs(
-                float(item["stamp_sec"]) - image_stamp_sec
-            ),
-        )
-        age_sec = abs(float(best["stamp_sec"]) - image_stamp_sec)
+        disparity_stamp_sec = self._stamp_to_sec(msg.header.stamp)
+        age_sec = abs(disparity_stamp_sec - image_stamp_sec)
         if age_sec > self.depth_max_age_sec:
             return None
 
-        selected = dict(best)
-        selected["age_ms"] = age_sec * 1000.0
-        return selected
+        try:
+            # Zero-copy NumPy view over the selected ROS message. The local
+            # message reference keeps the backing buffer alive for this
+            # analysis cycle.
+            disparity = self._disparity_array(msg)
+        except Exception as exc:
+            self.get_logger().warning(
+                f"disparity conversion failed: {exc}"
+            )
+            return None
+
+        return {
+            "stamp_sec": disparity_stamp_sec,
+            "frame_id": msg.header.frame_id,
+            "array": disparity,
+            "message": msg,
+            "focal_px": float(msg.f),
+            "baseline_m": abs(float(msg.t)),
+            "min_disparity": float(msg.min_disparity),
+            "max_disparity": float(msg.max_disparity),
+            "age_ms": age_sec * 1000.0,
+        }
 
     @staticmethod
     def _depth_defaults(status: str) -> Dict[str, Any]:
@@ -801,33 +827,13 @@ class YoloTensorRTNode(Node):
         return enriched
 
     def image_cb(self, msg: Image) -> None:
-        try:
-            if msg.encoding == "bgr8":
-                frame = self.bridge.imgmsg_to_cv2(
-                    msg,
-                    desired_encoding="bgr8",
-                )
-            elif msg.encoding == "mono8":
-                gray = self.bridge.imgmsg_to_cv2(
-                    msg,
-                    desired_encoding="mono8",
-                )
-                frame = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
-            else:
-                frame = self.bridge.imgmsg_to_cv2(
-                    msg,
-                    desired_encoding="bgr8",
-                )
-
-            self.last_frame_bgr = frame
-            self.last_frame_stamp_sec = self._stamp_to_sec(
-                msg.header.stamp
-            )
-            self.last_frame_id = msg.header.frame_id
-        except Exception as exc:
-            self.get_logger().warning(
-                f"image conversion failed: {exc}"
-            )
+        # The upstream C++ gate already limits this stream to the target
+        # analysis rate. Process each fresh image immediately. QoS depth=1
+        # prevents a backlog if one inference takes longer than expected.
+        self.image_callback_count += 1
+        self._rate_window_callbacks += 1
+        self.last_image_msg = msg
+        self.timer_cb()
 
     @staticmethod
     def _is_noisy_class(class_name: str) -> bool:
@@ -1388,12 +1394,53 @@ class YoloTensorRTNode(Node):
         return stable
 
     def timer_cb(self) -> None:
-        if self.last_frame_bgr is None:
+        callback_started = time.perf_counter()
+        msg = self.last_image_msg
+        if msg is None:
             return
 
-        frame = self.last_frame_bgr.copy()
-        frame_stamp_sec = self.last_frame_stamp_sec
-        frame_id = self.last_frame_id
+        image_stamp_ns = self._stamp_to_ns(msg.header.stamp)
+        if image_stamp_ns == self.last_processed_image_stamp_ns:
+            self.duplicate_image_skips += 1
+            return
+
+        # Claim this frame before conversion/inference so a failed frame is
+        # not retried forever on every timer tick.
+        self.last_processed_image_stamp_ns = image_stamp_ns
+
+        try:
+            if msg.encoding == "bgr8":
+                frame = self.bridge.imgmsg_to_cv2(
+                    msg,
+                    desired_encoding="bgr8",
+                )
+            elif msg.encoding == "mono8":
+                gray = self.bridge.imgmsg_to_cv2(
+                    msg,
+                    desired_encoding="mono8",
+                )
+                frame = cv2.cvtColor(
+                    gray,
+                    cv2.COLOR_GRAY2BGR,
+                )
+            else:
+                frame = self.bridge.imgmsg_to_cv2(
+                    msg,
+                    desired_encoding="bgr8",
+                )
+
+            frame = np.ascontiguousarray(frame)
+        except Exception as exc:
+            self.image_conversion_failures += 1
+            self.get_logger().warning(
+                f"image conversion failed: {exc}"
+            )
+            return
+
+        frame_stamp_sec = self._stamp_to_sec(
+            msg.header.stamp
+        )
+        frame_id = msg.header.frame_id
         depth_frame = self._nearest_disparity(frame_stamp_sec)
         height, width = frame.shape[:2]
         motion_ratio = self._compute_motion_ratio(frame)
@@ -1414,6 +1461,7 @@ class YoloTensorRTNode(Node):
                 time.perf_counter() - started
             ) * 1000.0
         except Exception as exc:
+            self.inference_failures += 1
             self.get_logger().warning(
                 f"YOLO inference failed: {exc}"
             )
@@ -1667,6 +1715,7 @@ class YoloTensorRTNode(Node):
                     self.inference_conf_threshold
                 ),
                 "analysis_period_sec": self.analysis_period_sec,
+                "duplicate_image_skips": self.duplicate_image_skips,
                 "latency_ms": round(total_latency_ms, 2),
                 "speed": {
                     key: round(float(value), 3)
@@ -1734,6 +1783,7 @@ class YoloTensorRTNode(Node):
             f"motion={motion_ratio:.3f}, "
             f"scene_motion={scene_motion}, "
             f"suppressed_duplicates={suppressed_duplicates}, "
+            f"duplicate_image_skips={self.duplicate_image_skips}, "
             f"depth_valid={sum(1 for detection in detections if detection.get('distance_valid'))}/"
             f"{len(detections)}, "
             f"depth_age_ms={(round(float(depth_frame.get('age_ms', 0.0)), 1) if depth_frame is not None else 'none')}, "
@@ -1743,7 +1793,49 @@ class YoloTensorRTNode(Node):
             f"{primary_target.get('proximity_hint', '-')}/"
             f"{primary_target.get('distance_m', '-') }m"
         )
+        self.successful_publish_count += 1
+        self._rate_window_publishes += 1
+
+        callback_total_ms = (
+            time.perf_counter() - callback_started
+        ) * 1000.0
+        self._rate_window_callback_total_ms += callback_total_ms
+        self._rate_window_callback_max_ms = max(
+            self._rate_window_callback_max_ms,
+            callback_total_ms,
+        )
+
+        debug_msg.data += (
+            f", source_callback_total={self.image_callback_count}"
+            f", source_publish_total={self.successful_publish_count}"
+            f", callback_total_ms={callback_total_ms:.1f}"
+        )
         self.debug_pub.publish(debug_msg)
+
+        now = time.perf_counter()
+        elapsed = now - self._rate_window_started
+        if elapsed >= 5.0:
+            callback_hz = self._rate_window_callbacks / elapsed
+            publish_hz = self._rate_window_publishes / elapsed
+            avg_callback_ms = (
+                self._rate_window_callback_total_ms
+                / max(1, self._rate_window_publishes)
+            )
+            self.get_logger().info(
+                "yolo_source_rate "
+                f"callbacks={callback_hz:.2f}Hz "
+                f"published={publish_hz:.2f}Hz "
+                f"callback_avg={avg_callback_ms:.1f}ms "
+                f"callback_max={self._rate_window_callback_max_ms:.1f}ms "
+                f"duplicates={self.duplicate_image_skips} "
+                f"conversion_failures={self.image_conversion_failures} "
+                f"inference_failures={self.inference_failures}"
+            )
+            self._rate_window_started = now
+            self._rate_window_callbacks = 0
+            self._rate_window_publishes = 0
+            self._rate_window_callback_total_ms = 0.0
+            self._rate_window_callback_max_ms = 0.0
 
 
 def main(args=None) -> None:

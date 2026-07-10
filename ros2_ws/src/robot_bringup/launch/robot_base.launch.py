@@ -48,7 +48,7 @@ def generate_launch_description():
             PathJoinSubstitution([
                 FindPackageShare("robot_camera"),
                 "launch",
-                "stereo_rectify.launch.py",
+                "stereo_processing_composed.launch.py",
             ])
         )
     )
@@ -73,5 +73,4 @@ def generate_launch_description():
         esp32_transport,
         stereo_camera_launch,
         stereo_rectify_launch,
-        stereo_disparity_launch,
     ])
