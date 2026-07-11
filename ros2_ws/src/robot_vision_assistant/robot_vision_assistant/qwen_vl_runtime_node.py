@@ -70,6 +70,15 @@ class VisualSession:
     turns: int = 0
 
 
+class HttpStatusError(RuntimeError):
+    """Non-retryable HTTP response from llama-server."""
+
+    def __init__(self, status: int, body: str) -> None:
+        self.status = int(status)
+        self.body = body
+        super().__init__(f"HTTP {self.status}: {self.body}")
+
+
 class PersistentLlamaClient:
     """Single-threaded persistent HTTP client for llama-server."""
 
@@ -131,10 +140,14 @@ class PersistentLlamaClient:
                 response = connection.getresponse()
                 raw = response.read()
                 if response.status >= 400:
-                    raise RuntimeError(
-                        f"HTTP {response.status}: {raw.decode('utf-8', 'replace')}"
+                    raise HttpStatusError(
+                        response.status,
+                        raw.decode("utf-8", "replace"),
                     )
                 return json.loads(raw.decode("utf-8"))
+            except HttpStatusError:
+                self.close()
+                raise
             except Exception:
                 self.close()
                 if attempt == 1:
@@ -173,8 +186,9 @@ class PersistentLlamaClient:
                 response = connection.getresponse()
                 if response.status >= 400:
                     raw = response.read()
-                    raise RuntimeError(
-                        f"HTTP {response.status}: {raw.decode('utf-8', 'replace')}"
+                    raise HttpStatusError(
+                        response.status,
+                        raw.decode("utf-8", "replace"),
                     )
 
                 while True:
@@ -228,6 +242,9 @@ class PersistentLlamaClient:
                     first_content_sec,
                     first_sentence_sec,
                 )
+            except HttpStatusError:
+                self.close()
+                raise
             except Exception:
                 self.close()
                 if attempt == 1:
@@ -789,6 +806,221 @@ class QwenVlRuntimeNode(Node):
             },
         ]
 
+    @staticmethod
+    def _compact_visual_response_context(
+        response_context: Optional[Dict[str, Any]],
+    ) -> str:
+        """Keep only safety-critical metadata for image requests."""
+        source = (
+            response_context
+            if isinstance(response_context, dict)
+            else {}
+        )
+        action_source = source.get("action_result")
+        rules_source = source.get("rules")
+
+        action_result: Dict[str, Any] = {}
+        if isinstance(action_source, dict):
+            for key in (
+                "state",
+                "execution_allowed",
+                "reason",
+            ):
+                if key in action_source:
+                    action_result[key] = action_source[key]
+
+        rules: Dict[str, Any] = {}
+        if isinstance(rules_source, dict):
+            for key in (
+                "sensor_values_must_be_supplied",
+                "claim_action_only_after_executor_confirmation",
+                "hardware_commands_forbidden",
+            ):
+                if key in rules_source:
+                    rules[key] = rules_source[key]
+
+        compact = {
+            "schema": "robot_visual_response_context",
+            "schema_version": 1,
+            "request_id": source.get("request_id"),
+            "route": source.get("route"),
+            "action_result": action_result,
+            "rules": rules,
+        }
+        return (
+            "ROBOT_VISUAL_CONTEXT="
+            + json.dumps(
+                compact,
+                ensure_ascii=False,
+                separators=(",", ":"),
+            )
+        )
+
+    @staticmethod
+    def _compact_visual_entity(
+        entity: Any,
+    ) -> Dict[str, Any]:
+        if not isinstance(entity, dict):
+            return {}
+
+        compact: Dict[str, Any] = {}
+        for key in (
+            "entity_id",
+            "track_id",
+            "class_name",
+            "label",
+            "semantic_group",
+            "confirmed",
+            "position_text",
+            "side",
+            "distance_valid",
+            "depth_confidence",
+            "depth_status",
+            "depth_source",
+        ):
+            value = entity.get(key)
+            if value is not None:
+                compact[key] = value
+
+        confidence = entity.get("confidence")
+        if isinstance(confidence, (int, float)):
+            compact["confidence"] = round(float(confidence), 3)
+
+        distance = entity.get("distance_m")
+        if (
+            bool(entity.get("distance_valid"))
+            and isinstance(distance, (int, float))
+        ):
+            compact["camera_distance_m"] = round(
+                float(distance),
+                3,
+            )
+            compact["distance_reference"] = (
+                "camera_optical_center"
+            )
+            compact["distance_source"] = str(
+                entity.get("depth_source")
+                or "unknown"
+            )
+
+        return compact
+
+    def _compact_visual_scene_context(self) -> Dict[str, Any]:
+        """Return bounded, fresh YOLO/Scene Interpreter facts."""
+        with self._state_lock:
+            scene = dict(self._latest_scene)
+            received = self._latest_scene_monotonic
+
+        age_sec: Optional[float] = None
+        if received is not None:
+            age_sec = max(0.0, time.monotonic() - received)
+
+        available = bool(
+            received is not None
+            and age_sec is not None
+            and age_sec <= self.max_scene_age_sec
+        )
+
+        counts: Dict[str, int] = {}
+        raw_counts = scene.get("counts")
+        if isinstance(raw_counts, dict):
+            for label in sorted(raw_counts)[:16]:
+                try:
+                    value = int(raw_counts[label])
+                except (TypeError, ValueError):
+                    continue
+                if value > 0:
+                    counts[str(label)] = value
+
+        raw_entities = scene.get("salient_entities")
+        if not isinstance(raw_entities, list) or not raw_entities:
+            raw_entities = []
+            persons = scene.get("persons")
+            objects = scene.get("objects")
+            if isinstance(persons, list):
+                raw_entities.extend(persons)
+            if isinstance(objects, list):
+                raw_entities.extend(objects)
+
+        entities: List[Dict[str, Any]] = []
+        seen_ids = set()
+        for raw_entity in raw_entities:
+            compact = self._compact_visual_entity(raw_entity)
+            if not compact:
+                continue
+            entity_id = str(
+                compact.get("entity_id")
+                or compact.get("track_id")
+                or f"entity_{len(entities)}"
+            )
+            if entity_id in seen_ids:
+                continue
+            seen_ids.add(entity_id)
+            compact["entity_id"] = entity_id
+            entities.append(compact)
+            if len(entities) >= 6:
+                break
+
+        relations: List[Dict[str, Any]] = []
+        raw_relations = scene.get("relations")
+        if isinstance(raw_relations, list):
+            for relation in raw_relations:
+                if not isinstance(relation, dict):
+                    continue
+                item = {
+                    key: relation.get(key)
+                    for key in (
+                        "subject_id",
+                        "relation",
+                        "object_id",
+                    )
+                    if relation.get(key) is not None
+                }
+                if len(item) == 3:
+                    relations.append(item)
+                if len(relations) >= 6:
+                    break
+
+        compact_scene: Dict[str, Any] = {
+            "source": "yolo_scene_interpreter",
+            "available": available,
+            "age_sec": (
+                round(age_sec, 3)
+                if age_sec is not None
+                else None
+            ),
+            "source_timestamp": scene.get("source_timestamp"),
+            "counts": counts,
+            "entities": entities,
+            "relations": relations,
+            "primary_person": self._compact_visual_entity(
+                scene.get("primary_person")
+            ),
+            "nearest_entity": self._compact_visual_entity(
+                scene.get("nearest_entity")
+            ),
+        }
+
+        serialized = json.dumps(
+            compact_scene,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
+        if len(serialized) > 2200:
+            compact_scene["relations"] = []
+            compact_scene["entities"] = entities[:4]
+            serialized = json.dumps(
+                compact_scene,
+                ensure_ascii=False,
+                separators=(",", ":"),
+            )
+        if len(serialized) > 2200:
+            compact_scene["primary_person"] = {}
+            compact_scene["nearest_entity"] = {}
+            compact_scene["entities"] = entities[:3]
+
+        return compact_scene
+
     def _prepare_visual_messages(
         self,
         request: RuntimeRequest,
@@ -808,10 +1040,10 @@ class QwenVlRuntimeNode(Node):
             frame_id, data_url, frame_metadata = (
                 self._capture_frame_data_url()
             )
-            scene_at_capture = self._compact_scene_context()
-            context_block = render_response_context(
+            context_block = self._compact_visual_response_context(
                 request.response_context
             )
+            scene_at_capture = self._compact_visual_scene_context()
             messages: List[Dict[str, Any]] = [
                 {"role": "system", "content": self.system_prompt},
                 {
@@ -820,18 +1052,27 @@ class QwenVlRuntimeNode(Node):
                         {
                             "type": "text",
                             "text": (
-                                "Ответь по изображению и используй структурированные "
-                                "факты Scene Interpreter как более надёжный источник "
-                                "для количества, положения и расстояния. Упоминай "
-                                "только уверенно видимые или подтверждённые объекты и "
-                                "не выдумывай поверхности, отношения или детали. "
+                                "Ответь по текущему изображению и данным сенсоров. "
+                                "Для внешнего вида и общего описания используй "
+                                "изображение. Для классов, количества, положения и "
+                                "метрических расстояний используй только "
+                                "VERIFIED_SCENE_FACTS от YOLO/Scene Interpreter. "
+                                "Поле camera_distance_m всегда означает расстояние "
+                                "от оптического центра камеры до конкретного объекта, "
+                                "а не расстояние между двумя объектами. Никогда не "
+                                "выводи межобъектное расстояние из двух значений "
+                                "camera_distance_m. "
+                                "Если available=false или нужного поля нет, прямо "
+                                "скажи, что свежих данных недостаточно. Не придумывай "
+                                "сенсорные значения, поверхности, отношения или детали. "
                                 "Составь 1–3 отдельных коротких предложения. При "
                                 "общем описании человека разрешено только нейтрально "
                                 "сказать, что в кадре виден человек; не описывай его "
                                 "пол, возраст, одежду, тело, эмоции, позу или действия, "
                                 "если пользователь прямо об этом не спросил.\n"
                                 f"{context_block}\n"
-                                f"SCENE_JSON_AT_CAPTURE={json.dumps(scene_at_capture, ensure_ascii=False, separators=(',', ':'))}\n"
+                                "VERIFIED_SCENE_FACTS="
+                                f"{json.dumps(scene_at_capture, ensure_ascii=False, separators=(',', ':'))}\n"
                                 f"QUESTION={request.query}"
                             ),
                         },

@@ -73,6 +73,16 @@ def test_visual_followup_reuses_active_frame():
     assert route.new_visual_session is False
 
 
+def test_visual_followup_near_person_reuses_active_frame():
+    route = classify_response_route(
+        "А что находится рядом с ним?",
+        visual_session_active=True,
+    )
+    assert route.route == "visual_followup"
+    assert route.qwen_mode == "image"
+    assert route.new_visual_session is False
+
+
 def test_action_is_ai_phrased_but_not_executable():
     route = classify_response_route("Поверни направо")
     request = build_qwen_request(
@@ -126,3 +136,16 @@ def test_context_renderer_is_explicit_and_machine_readable():
     rendered = render_response_context({"request_id": "r3"})
     assert rendered.startswith("ROBOT_RESPONSE_CONTEXT=")
     assert '"request_id":"r3"' in rendered
+
+def test_detailed_current_frame_query_routes_to_image():
+    route = classify_response_route(
+        (
+            "Подробно опиши текущий кадр. Для подтвержденных объектов "
+            "укажи расстояние от камеры и не оценивай расстояние "
+            "между объектами."
+        ),
+        visual_session_active=False,
+    )
+    assert route.route == "visual"
+    assert route.qwen_mode == "image"
+    assert route.new_visual_session is True
