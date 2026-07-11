@@ -687,6 +687,106 @@ class MemoryStore:
             )
             self.conn.commit()
 
+
+    def get_conversation(
+        self,
+        conversation_id: str,
+    ) -> Optional[Dict[str, Any]]:
+        with self._lock:
+            row = self.conn.execute(
+                "SELECT * FROM conversations WHERE id=?",
+                (conversation_id,),
+            ).fetchone()
+        return self._row_to_dict(row)
+
+    def get_message(
+        self,
+        message_id: int,
+    ) -> Optional[Dict[str, Any]]:
+        with self._lock:
+            row = self.conn.execute(
+                "SELECT * FROM messages WHERE id=?",
+                (int(message_id),),
+            ).fetchone()
+        return self._row_to_dict(row)
+
+    def update_conversation_topic(
+        self,
+        conversation_id: str,
+        active_topic: str,
+    ) -> None:
+        with self._lock:
+            self.conn.execute(
+                """
+                UPDATE conversations
+                SET
+                    active_topic=?,
+                    last_activity_at=CURRENT_TIMESTAMP
+                WHERE id=?
+                """,
+                (active_topic, conversation_id),
+            )
+            self.conn.commit()
+
+    def get_conversation_participants(
+        self,
+        conversation_id: str,
+    ) -> List[Dict[str, Any]]:
+        with self._lock:
+            rows = self.conn.execute(
+                """
+                SELECT
+                    p.conversation_id,
+                    p.entity_id,
+                    p.joined_at,
+                    p.left_at,
+                    p.identity_confidence,
+                    p.identity_source,
+                    e.entity_type,
+                    e.name,
+                    e.role,
+                    e.privacy_scope
+                FROM conversation_participants AS p
+                JOIN entities AS e ON e.id=p.entity_id
+                WHERE p.conversation_id=?
+                ORDER BY p.joined_at ASC, p.entity_id ASC
+                """,
+                (conversation_id,),
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def get_previous_conversation_for_entity(
+        self,
+        entity_id: str,
+        *,
+        exclude_conversation_id: Optional[str] = None,
+    ) -> Optional[Dict[str, Any]]:
+        query = """
+            SELECT
+                c.*,
+                s.summary,
+                s.open_topics_json,
+                p.identity_confidence,
+                p.identity_source
+            FROM conversation_participants AS p
+            JOIN conversations AS c
+                ON c.id=p.conversation_id
+            LEFT JOIN conversation_summaries AS s
+                ON s.conversation_id=c.id
+            WHERE p.entity_id=?
+        """
+        params: List[Any] = [entity_id]
+        if exclude_conversation_id is not None:
+            query += " AND c.id != ?"
+            params.append(exclude_conversation_id)
+        query += """
+            ORDER BY c.last_activity_at DESC, c.started_at DESC
+            LIMIT 1
+        """
+        with self._lock:
+            row = self.conn.execute(query, params).fetchone()
+        return self._row_to_dict(row)
+
     # ---------- long-term facts ----------
 
     def add_memory_fact(
