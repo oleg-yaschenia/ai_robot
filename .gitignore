@@ -37,3 +37,5 @@ tools/whisper.cpp/models/*.bin
 *.engine
 *.plan
 *.trt
+*.sqlite.before_*
+*.sqlite.backup_*
