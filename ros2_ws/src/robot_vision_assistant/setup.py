@@ -26,6 +26,7 @@ setup(
             'vision_assistant_node = robot_vision_assistant.vision_assistant_node:main',
             'assistant_router_node = robot_vision_assistant.assistant_router_node:main',
             'assistant_core_shadow_node = robot_vision_assistant.assistant_core_shadow_node:main',
+            'local_semantic_resolver_node = robot_vision_assistant.local_semantic_resolver_node:main',
             'local_perception_node = robot_vision_assistant.local_perception_node:main',
             'yolo_perception_node = robot_vision_assistant.yolo_perception_node:main',
             'yolo_tensorrt_node = robot_vision_assistant.yolo_tensorrt_node:main',

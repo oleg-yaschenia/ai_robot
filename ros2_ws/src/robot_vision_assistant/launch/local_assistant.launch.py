@@ -26,6 +26,15 @@ def generate_launch_description():
     whisper_cli = LaunchConfiguration("whisper_cli")
     whisper_model = LaunchConfiguration("whisper_model")
     enable_qwen_vl_shadow = LaunchConfiguration("enable_qwen_vl_shadow")
+    enable_local_semantic_resolver = LaunchConfiguration(
+        "enable_local_semantic_resolver"
+    )
+    semantic_resolver_timeout_sec = LaunchConfiguration(
+        "semantic_resolver_timeout_sec"
+    )
+    semantic_resolver_max_tokens = LaunchConfiguration(
+        "semantic_resolver_max_tokens"
+    )
     qwen_server_url = LaunchConfiguration("qwen_server_url")
     qwen_query_topic = LaunchConfiguration("qwen_query_topic")
     qwen_image_topic = LaunchConfiguration("qwen_image_topic")
@@ -270,6 +279,23 @@ def generate_launch_description():
             description=(
                 "Start the shadow-only persistent Qwen3-VL runtime node."
             ),
+        ),
+        DeclareLaunchArgument(
+            "enable_local_semantic_resolver",
+            default_value="false",
+            description=(
+                "Enable Local Semantic Resolver v1 in shadow mode. "
+                "It processes only UNKNOWN request plans, uses the "
+                "existing llama-server, and cannot execute actions."
+            ),
+        ),
+        DeclareLaunchArgument(
+            "semantic_resolver_timeout_sec",
+            default_value="30.0",
+        ),
+        DeclareLaunchArgument(
+            "semantic_resolver_max_tokens",
+            default_value="96",
         ),
         DeclareLaunchArgument(
             "qwen_server_url",
@@ -615,6 +641,45 @@ def generate_launch_description():
                 {"plan_topic": "/assistant/core/request_plan_json"},
                 {"clarification_topic": "/assistant/clarification/request_json"},
                 {"max_clarification_attempts": 2},
+            ],
+        ),
+
+        Node(
+            package="robot_vision_assistant",
+            executable="local_semantic_resolver_node",
+            name="local_semantic_resolver_node",
+            output="screen",
+            condition=IfCondition(
+                enable_local_semantic_resolver
+            ),
+            parameters=[
+                {
+                    "input_topic":
+                    "/assistant/core/request_plan_json"
+                },
+                {
+                    "output_topic":
+                    "/assistant/semantic/request_plan_json"
+                },
+                {
+                    "status_topic":
+                    "/assistant/semantic/status_json"
+                },
+                {"server_url": qwen_server_url},
+                {
+                    "request_timeout_sec": ParameterValue(
+                        semantic_resolver_timeout_sec,
+                        value_type=float,
+                    )
+                },
+                {
+                    "max_tokens": ParameterValue(
+                        semantic_resolver_max_tokens,
+                        value_type=int,
+                    )
+                },
+                {"queue_size": 2},
+                {"dedupe_history": 256},
             ],
         ),
 
