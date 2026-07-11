@@ -177,6 +177,7 @@ def build_qwen_request(
     query: str,
     route: ResponseRoute,
     capabilities: Dict[str, Any] | None = None,
+    memory_context: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     context = build_response_context(
         request_id=request_id,
@@ -184,6 +185,7 @@ def build_qwen_request(
         route=route.route,
         capabilities=capabilities,
         action_result=build_action_result(route),
+        memory_context=memory_context,
     )
     return {
         "request_id": request_id,

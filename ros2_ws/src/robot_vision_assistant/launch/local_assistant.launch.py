@@ -66,6 +66,12 @@ def generate_launch_description():
     response_legacy_candidate_topic = LaunchConfiguration(
         "response_legacy_candidate_topic"
     )
+    response_memory_enabled = LaunchConfiguration(
+        "response_memory_enabled"
+    )
+    response_identity_topic = LaunchConfiguration(
+        "response_identity_topic"
+    )
     legacy_record_interactions = LaunchConfiguration(
         "legacy_record_interactions"
     )
@@ -359,6 +365,20 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "response_legacy_candidate_topic",
             default_value="/assistant/response/legacy_candidate_json",
+        ),
+        DeclareLaunchArgument(
+            "response_memory_enabled",
+            default_value="false",
+            description=(
+                "Persist orchestrated dialogue locally and inject "
+                "bounded shared/person-aware memory context."
+            ),
+        ),
+        DeclareLaunchArgument(
+            "response_identity_topic",
+            default_value=(
+                "/assistant/identity/current_speaker_json"
+            ),
         ),
         DeclareLaunchArgument(
             "qwen_active_output",
@@ -711,6 +731,19 @@ def generate_launch_description():
                     )
                 },
                 {"visual_session_ttl_sec": 30.0},
+                {
+                    "memory_enabled": ParameterValue(
+                        response_memory_enabled,
+                        value_type=bool,
+                    )
+                },
+                {"memory_db_path": db_path},
+                {"identity_topic": response_identity_topic},
+                {"identity_ttl_sec": 15.0},
+                {"memory_inactivity_timeout_sec": 900.0},
+                {"memory_recent_messages": 8},
+                {"memory_personal_facts": 4},
+                {"memory_max_context_chars": 2400},
             ],
         ),
 

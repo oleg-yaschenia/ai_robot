@@ -818,6 +818,7 @@ class QwenVlRuntimeNode(Node):
         )
         action_source = source.get("action_result")
         rules_source = source.get("rules")
+        memory_source = source.get("memory_context")
 
         action_result: Dict[str, Any] = {}
         if isinstance(action_source, dict):
@@ -846,6 +847,11 @@ class QwenVlRuntimeNode(Node):
             "route": source.get("route"),
             "action_result": action_result,
             "rules": rules,
+            "memory_context": (
+                memory_source
+                if isinstance(memory_source, dict)
+                else {}
+            ),
         }
         return (
             "ROBOT_VISUAL_CONTEXT="

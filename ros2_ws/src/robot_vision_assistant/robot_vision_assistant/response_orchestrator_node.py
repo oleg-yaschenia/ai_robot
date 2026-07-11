@@ -24,6 +24,9 @@ from std_msgs.msg import String
 from robot_vision_assistant.assistant_response_contract import (
     DEFAULT_CAPABILITIES,
 )
+from robot_vision_assistant.response_memory_bridge import (
+    ResponseMemoryBridge,
+)
 from robot_vision_assistant.response_orchestrator import (
     ResponseRoute,
     build_legacy_request,
@@ -43,6 +46,9 @@ class PendingResponse:
     legacy_deadline: float
     legacy_answer: Optional[str] = None
     qwen_failed: bool = False
+    memory_conversation_id: Optional[str] = None
+    memory_user_message_id: Optional[int] = None
+    memory_context: Optional[Dict[str, Any]] = None
 
 
 class ResponseOrchestratorNode(Node):
@@ -77,6 +83,24 @@ class ResponseOrchestratorNode(Node):
         self.declare_parameter("legacy_timeout_sec", 3.0)
         self.declare_parameter("visual_session_ttl_sec", 30.0)
         self.declare_parameter("max_pending_queries", 4)
+        self.declare_parameter("memory_enabled", False)
+        self.declare_parameter("memory_db_path", "")
+        self.declare_parameter(
+            "identity_topic",
+            "/assistant/identity/current_speaker_json",
+        )
+        self.declare_parameter("identity_ttl_sec", 15.0)
+        self.declare_parameter(
+            "memory_inactivity_timeout_sec",
+            900.0,
+        )
+        self.declare_parameter("memory_recent_messages", 8)
+        self.declare_parameter("memory_personal_facts", 4)
+        self.declare_parameter("memory_max_context_chars", 2400)
+        self.declare_parameter(
+            "default_speaker_entity_id",
+            "person:unknown",
+        )
         self.declare_parameter(
             "capabilities_json",
             json.dumps(DEFAULT_CAPABILITIES, ensure_ascii=False),
@@ -121,6 +145,52 @@ class ResponseOrchestratorNode(Node):
         self.max_pending_queries = int(
             self.get_parameter("max_pending_queries").value
         )
+        self.memory_enabled = bool(
+            self.get_parameter("memory_enabled").value
+        )
+        self.identity_topic = str(
+            self.get_parameter("identity_topic").value
+        )
+        self.memory_bridge: Optional[ResponseMemoryBridge] = None
+        if self.memory_enabled:
+            memory_db_path = str(
+                self.get_parameter("memory_db_path").value
+            ).strip()
+            if not memory_db_path:
+                raise RuntimeError(
+                    "memory_db_path is required when memory_enabled"
+                )
+            self.memory_bridge = ResponseMemoryBridge(
+                memory_db_path,
+                default_speaker_entity_id=str(
+                    self.get_parameter(
+                        "default_speaker_entity_id"
+                    ).value
+                ),
+                identity_ttl_sec=float(
+                    self.get_parameter("identity_ttl_sec").value
+                ),
+                inactivity_timeout_sec=float(
+                    self.get_parameter(
+                        "memory_inactivity_timeout_sec"
+                    ).value
+                ),
+                recent_message_limit=int(
+                    self.get_parameter(
+                        "memory_recent_messages"
+                    ).value
+                ),
+                personal_fact_limit=int(
+                    self.get_parameter(
+                        "memory_personal_facts"
+                    ).value
+                ),
+                max_context_chars=int(
+                    self.get_parameter(
+                        "memory_max_context_chars"
+                    ).value
+                ),
+            )
 
         try:
             capabilities = json.loads(
@@ -159,6 +229,14 @@ class ResponseOrchestratorNode(Node):
         self.legacy_candidate_sub = self.create_subscription(
             String, self.legacy_candidate_topic, self.legacy_candidate_cb, 10
         )
+        self.identity_sub = None
+        if self.memory_bridge is not None:
+            self.identity_sub = self.create_subscription(
+                String,
+                self.identity_topic,
+                self.identity_cb,
+                10,
+            )
         self.timer = self.create_timer(0.1, self.timer_cb)
 
         self._publish_status(
@@ -169,12 +247,27 @@ class ResponseOrchestratorNode(Node):
                 "qwen_query_topic": self.qwen_query_topic,
                 "legacy_query_topic": self.legacy_query_topic,
                 "execution_allowed": False,
+                "memory_enabled": self.memory_enabled,
             },
         )
         self.get_logger().info(
             "response_orchestrator_node started: "
             f"mode={self.response_mode}, answer={self.answer_topic}"
         )
+
+    def identity_cb(self, msg: String) -> None:
+        if self.memory_bridge is None:
+            return
+        try:
+            payload = json.loads(msg.data)
+            if not self.memory_bridge.update_identity(payload):
+                self.get_logger().warning(
+                    "ignored invalid speaker identity payload"
+                )
+        except Exception as exc:
+            self.get_logger().warning(
+                f"invalid speaker identity payload: {exc}"
+            )
 
     def query_cb(self, msg: String) -> None:
         query = (msg.data or "").strip()
@@ -203,6 +296,28 @@ class ResponseOrchestratorNode(Node):
             query,
             visual_session_active=self._visual_session_active(),
         )
+        memory_record = None
+        if self.memory_bridge is not None:
+            try:
+                memory_record = self.memory_bridge.before_request(
+                    query,
+                    metadata={
+                        "request_id": request_id,
+                        "route": route.route,
+                    },
+                )
+            except Exception as exc:
+                self.get_logger().error(
+                    f"memory before_request failed: {exc}"
+                )
+                self._publish_status(
+                    "memory_error",
+                    {
+                        "stage": "before_request",
+                        "error": repr(exc),
+                    },
+                )
+
         now = time.monotonic()
         self._pending = PendingResponse(
             request_id=request_id,
@@ -211,6 +326,21 @@ class ResponseOrchestratorNode(Node):
             started_monotonic=now,
             qwen_deadline=now + self.qwen_timeout_sec,
             legacy_deadline=now + self.legacy_timeout_sec,
+            memory_conversation_id=(
+                memory_record.conversation_id
+                if memory_record is not None
+                else None
+            ),
+            memory_user_message_id=(
+                memory_record.user_message_id
+                if memory_record is not None
+                else None
+            ),
+            memory_context=(
+                memory_record.memory_context
+                if memory_record is not None
+                else None
+            ),
         )
 
         self._publish_trace(
@@ -272,6 +402,12 @@ class ResponseOrchestratorNode(Node):
             query=query,
             route=route,
             capabilities=self.capabilities,
+            memory_context=(
+                self._pending.memory_context
+                if self._pending is not None
+                and self._pending.request_id == request_id
+                else None
+            ),
         )
         self._publish_json(self.qwen_query_pub, payload)
 
@@ -402,6 +538,41 @@ class ResponseOrchestratorNode(Node):
             return
         request_id = pending.request_id
         elapsed = time.monotonic() - pending.started_monotonic
+        memory_assistant_message_id = None
+        if (
+            self.memory_bridge is not None
+            and pending.memory_conversation_id is not None
+            and pending.memory_user_message_id is not None
+        ):
+            try:
+                memory_assistant_message_id = (
+                    self.memory_bridge.after_response(
+                        conversation_id=(
+                            pending.memory_conversation_id
+                        ),
+                        reply_to_message_id=(
+                            pending.memory_user_message_id
+                        ),
+                        answer=answer,
+                        provider=source,
+                        provider_message_id=request_id,
+                        metadata={
+                            "route": pending.route.route,
+                            **(details or {}),
+                        },
+                    )
+                )
+            except Exception as exc:
+                self.get_logger().error(
+                    f"memory after_response failed: {exc}"
+                )
+                self._publish_status(
+                    "memory_error",
+                    {
+                        "stage": "after_response",
+                        "error": repr(exc),
+                    },
+                )
         self._publish_string(self.answer_pub, answer)
         self._publish_trace(
             "response_selected",
@@ -413,6 +584,15 @@ class ResponseOrchestratorNode(Node):
                 "answer": answer,
                 "elapsed_sec": round(elapsed, 4),
                 "execution_allowed": False,
+                "memory_conversation_id": (
+                    pending.memory_conversation_id
+                ),
+                "memory_user_message_id": (
+                    pending.memory_user_message_id
+                ),
+                "memory_assistant_message_id": (
+                    memory_assistant_message_id
+                ),
                 **(details or {}),
             },
         )
@@ -445,6 +625,14 @@ class ResponseOrchestratorNode(Node):
         msg = String()
         msg.data = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
         publisher.publish(msg)
+
+    def destroy_node(self) -> None:
+        if self.memory_bridge is not None:
+            try:
+                self.memory_bridge.close()
+            except Exception:
+                pass
+        super().destroy_node()
 
 
 def main(args=None) -> None:

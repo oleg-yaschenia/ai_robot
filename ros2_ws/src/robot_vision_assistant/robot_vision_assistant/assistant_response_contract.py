@@ -59,6 +59,7 @@ def build_response_context(
     capabilities: Dict[str, Any] | None = None,
     action_result: Dict[str, Any] | None = None,
     provider: str = "local_qwen",
+    memory_context: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     """Build the provider-neutral context passed to response generators."""
     return {
@@ -73,6 +74,7 @@ def build_response_context(
             "state": "not_requested",
             "execution_allowed": False,
         },
+        "memory_context": memory_context or {},
         "rules": {
             "sensor_values_must_be_supplied": True,
             "claim_action_only_after_executor_confirmation": True,
