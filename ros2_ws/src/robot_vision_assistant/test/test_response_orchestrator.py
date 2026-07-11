@@ -23,6 +23,32 @@ def test_visual_overview_uses_new_image_session():
     assert route.new_visual_session is True
 
 
+def test_visual_overview_with_now_uses_image_mode():
+    route = classify_response_route("Что ты сейчас видишь?")
+    assert route.route == "visual"
+    assert route.qwen_mode == "image"
+    assert route.new_visual_session is True
+
+
+def test_current_view_in_front_uses_image_mode():
+    route = classify_response_route("Что сейчас перед тобой?")
+    assert route.route == "visual"
+    assert route.qwen_mode == "image"
+
+
+def test_look_around_uses_image_mode():
+    route = classify_response_route("Осмотрись и опиши комнату")
+    assert route.route == "visual"
+    assert route.qwen_mode == "image"
+
+
+def test_direct_side_question_starts_visual_session():
+    route = classify_response_route("Что находится слева?")
+    assert route.route == "visual"
+    assert route.qwen_mode == "image"
+    assert route.new_visual_session is True
+
+
 def test_count_uses_scene_facts_but_ai_phrasing():
     route = classify_response_route("Сколько человек ты видишь?")
     assert route.route == "scene_fact"
