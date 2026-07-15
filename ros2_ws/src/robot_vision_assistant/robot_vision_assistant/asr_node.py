@@ -13,7 +13,7 @@ import numpy as np
 import rclpy
 import webrtcvad
 from rclpy.node import Node
-from std_msgs.msg import String
+from std_msgs.msg import Bool, String
 
 
 class AsrNode(Node):
@@ -132,7 +132,7 @@ class AsrNode(Node):
         self.status_pub = self.create_publisher(String, self.status_topic, 10)
 
         self.listen_sub = self.create_subscription(
-            String, self.listen_topic, self.listen_cb, 10
+            Bool, self.listen_topic, self.listen_cb, 10
         )
 
         self.busy = False
@@ -167,7 +167,11 @@ class AsrNode(Node):
         msg.data = text
         self.status_pub.publish(msg)
 
-    def listen_cb(self, msg: String):
+    def listen_cb(self, msg: Bool):
+        if not msg.data:
+            self.publish_status("ASR listen false ignored")
+            return
+
         if self.busy:
             self.publish_status("ASR busy, listen ignored")
             return
@@ -214,10 +218,16 @@ class AsrNode(Node):
             self.get_logger().warning(f"ASR failed: {e}")
         finally:
             self.busy = False
+            keep_wav = self.debug_keep_wav
+            try:
+                keep_wav = bool(self.get_parameter("debug_keep_wav").value)
+            except Exception:
+                pass
+
             if (
                 wav_path
                 and os.path.exists(wav_path)
-                and not self.debug_keep_wav
+                and not keep_wav
             ):
                 try:
                     os.remove(wav_path)
