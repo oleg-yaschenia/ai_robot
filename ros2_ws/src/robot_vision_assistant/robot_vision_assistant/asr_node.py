@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import math
 import os
 import re
 import subprocess
@@ -54,6 +55,19 @@ class AsrNode(Node):
         self.declare_parameter("end_trigger_ratio", 0.90)     # unvoiced ratio to stop
         self.declare_parameter("min_utterance_ms", 400)       # ignore too-short utterances
 
+        # Far-field audio front-end. The ICS-43434 path has no useful ALSA
+        # capture gain, so sensitivity is handled before VAD and Whisper.
+        self.declare_parameter("channel_strategy", "best_snr")
+        self.declare_parameter("input_gain_db", 18.0)
+        self.declare_parameter("limiter_peak_dbfs", -6.0)
+        self.declare_parameter("start_energy_dbfs", -47.0)
+        self.declare_parameter("noise_calibration_ms", 600)
+        self.declare_parameter("start_snr_margin_db", 4.0)
+        self.declare_parameter("end_snr_margin_db", 2.0)
+        self.declare_parameter("speech_confirm_ms", 240)
+        self.declare_parameter("end_grace_ms", 1200)
+        self.declare_parameter("debug_keep_wav", False)
+
         self.listen_topic = str(self.get_parameter("listen_topic").value)
         self.query_topic = str(self.get_parameter("query_topic").value)
         self.transcript_topic = str(self.get_parameter("transcript_topic").value)
@@ -81,6 +95,35 @@ class AsrNode(Node):
         self.end_trigger_ratio = float(self.get_parameter("end_trigger_ratio").value)
         self.min_utterance_ms = int(self.get_parameter("min_utterance_ms").value)
 
+        self.channel_strategy = str(
+            self.get_parameter("channel_strategy").value
+        ).strip().lower()
+        self.input_gain_db = float(self.get_parameter("input_gain_db").value)
+        self.limiter_peak_dbfs = float(
+            self.get_parameter("limiter_peak_dbfs").value
+        )
+        self.start_energy_dbfs = float(
+            self.get_parameter("start_energy_dbfs").value
+        )
+        self.noise_calibration_ms = int(
+            self.get_parameter("noise_calibration_ms").value
+        )
+        self.start_snr_margin_db = float(
+            self.get_parameter("start_snr_margin_db").value
+        )
+        self.end_snr_margin_db = float(
+            self.get_parameter("end_snr_margin_db").value
+        )
+        self.speech_confirm_ms = int(
+            self.get_parameter("speech_confirm_ms").value
+        )
+        self.end_grace_ms = int(
+            self.get_parameter("end_grace_ms").value
+        )
+        self.debug_keep_wav = bool(
+            self.get_parameter("debug_keep_wav").value
+        )
+
         self.tmp_dir = Path(str(self.get_parameter("tmp_dir").value))
         self.tmp_dir.mkdir(parents=True, exist_ok=True)
 
@@ -93,17 +136,30 @@ class AsrNode(Node):
         )
 
         self.busy = False
-        self.vad = webrtcvad.Vad(self.vad_mode)
+        self.vads = [
+            webrtcvad.Vad(self.vad_mode)
+            for _ in range(max(1, self.record_channels))
+        ]
 
         self.publish_status(
             f"asr_node started: device={self.record_device}, sr={self.record_sample_rate}, "
             f"channels={self.record_channels}, format={self.record_format}, "
-            f"vad_mode={self.vad_mode}, frame_ms={self.frame_ms}"
+            f"vad_mode={self.vad_mode}, frame_ms={self.frame_ms}, "
+            f"channel_strategy={self.channel_strategy}, "
+            f"input_gain_db={self.input_gain_db:.1f}, "
+            f"start_energy_dbfs={self.start_energy_dbfs:.1f}, "
+            f"noise_calibration_ms={self.noise_calibration_ms}, "
+            f"speech_confirm_ms={self.speech_confirm_ms}"
         )
         self.get_logger().info(
             f"asr_node started: device={self.record_device}, sr={self.record_sample_rate}, "
             f"channels={self.record_channels}, format={self.record_format}, "
-            f"vad_mode={self.vad_mode}, frame_ms={self.frame_ms}"
+            f"vad_mode={self.vad_mode}, frame_ms={self.frame_ms}, "
+            f"channel_strategy={self.channel_strategy}, "
+            f"input_gain_db={self.input_gain_db:.1f}, "
+            f"start_energy_dbfs={self.start_energy_dbfs:.1f}, "
+            f"noise_calibration_ms={self.noise_calibration_ms}, "
+            f"speech_confirm_ms={self.speech_confirm_ms}"
         )
 
     def publish_status(self, text: str):
@@ -158,7 +214,11 @@ class AsrNode(Node):
             self.get_logger().warning(f"ASR failed: {e}")
         finally:
             self.busy = False
-            if wav_path and os.path.exists(wav_path):
+            if (
+                wav_path
+                and os.path.exists(wav_path)
+                and not self.debug_keep_wav
+            ):
                 try:
                     os.remove(wav_path)
                 except Exception:
@@ -167,23 +227,94 @@ class AsrNode(Node):
     def record_until_silence(self):
         if self.frame_ms not in (10, 20, 30):
             raise RuntimeError("frame_ms must be 10, 20 or 30")
+        if self.record_channels < 1:
+            raise RuntimeError("record_channels must be at least 1")
 
-        # 48k stereo s32le raw chunk size
-        samples_per_ch_48k = int(self.record_sample_rate * self.frame_ms / 1000)
-        bytes_per_chunk = samples_per_ch_48k * self.record_channels * 4  # int32
+        samples_per_ch_48k = int(
+            self.record_sample_rate * self.frame_ms / 1000
+        )
+        bytes_per_chunk = samples_per_ch_48k * self.record_channels * 4
 
         pre_roll_frames = max(1, self.pre_roll_ms // self.frame_ms)
         start_window_frames = max(1, self.start_window_ms // self.frame_ms)
         end_window_frames = max(1, self.end_window_ms // self.frame_ms)
         min_utterance_frames = max(1, self.min_utterance_ms // self.frame_ms)
-        max_utterance_frames = max(1, int(self.max_utterance_sec * 1000 / self.frame_ms))
-        speech_timeout_frames = max(1, int(self.speech_timeout_sec * 1000 / self.frame_ms))
+        max_utterance_frames = max(
+            1, int(self.max_utterance_sec * 1000 / self.frame_ms)
+        )
+        speech_timeout_frames = max(
+            1, int(self.speech_timeout_sec * 1000 / self.frame_ms)
+        )
+        calibration_frames = max(
+            1, self.noise_calibration_ms // self.frame_ms
+        )
+        confirm_frames = max(
+            1, self.speech_confirm_ms // self.frame_ms
+        )
+        end_grace_frames = max(
+            min_utterance_frames,
+            self.end_grace_ms // self.frame_ms,
+        )
 
+        # Each buffered item is (channel_frames, vad_flags, rms_dbfs).
         pre_roll = deque(maxlen=pre_roll_frames)
         start_ring = deque(maxlen=start_window_frames)
+        start_channel_rings = [
+            deque(maxlen=start_window_frames)
+            for _ in range(self.record_channels)
+        ]
         end_ring = deque(maxlen=end_window_frames)
 
-        collected_pcm16_frames = []
+        noise_rms_by_channel = [
+            [] for _ in range(self.record_channels)
+        ]
+        start_thresholds = [
+            self.start_energy_dbfs for _ in range(self.record_channels)
+        ]
+        end_thresholds = [
+            self.start_energy_dbfs - 3.0
+            for _ in range(self.record_channels)
+        ]
+
+        collected_by_channel = [
+            [] for _ in range(self.record_channels)
+        ]
+        voiced_counts = [0 for _ in range(self.record_channels)]
+        voiced_rms_by_channel = [
+            [] for _ in range(self.record_channels)
+        ]
+        all_rms_by_channel = [
+            [] for _ in range(self.record_channels)
+        ]
+
+        def reset_collection():
+            for channel_index in range(self.record_channels):
+                collected_by_channel[channel_index].clear()
+                voiced_counts[channel_index] = 0
+                voiced_rms_by_channel[channel_index].clear()
+                all_rms_by_channel[channel_index].clear()
+
+        def collect(item):
+            channel_frames, vad_flags, rms_values = item
+            for channel_index in range(self.record_channels):
+                collected_by_channel[channel_index].append(
+                    channel_frames[channel_index]
+                )
+                all_rms_by_channel[channel_index].append(
+                    rms_values[channel_index]
+                )
+                if vad_flags[channel_index]:
+                    voiced_counts[channel_index] += 1
+                    voiced_rms_by_channel[channel_index].append(
+                        rms_values[channel_index]
+                    )
+
+        def activity_flags(vad_flags, rms_values, thresholds):
+            return [
+                bool(vad_flags[channel_index])
+                and rms_values[channel_index] >= thresholds[channel_index]
+                for channel_index in range(self.record_channels)
+            ]
 
         cmd = [
             "arecord",
@@ -204,7 +335,9 @@ class AsrNode(Node):
 
         triggered = False
         frames_since_start = 0
+        confirmed_activity_frames = 0
         waited_frames = 0
+        calibration_count = 0
 
         try:
             while True:
@@ -212,23 +345,116 @@ class AsrNode(Node):
                 if not raw_chunk:
                     break
 
-                frame16 = self.raw48k_stereo_s32_to_16k_mono_s16(raw_chunk)
-                if frame16 is None:
+                channel_frames = (
+                    self.raw48k_stereo_s32_to_16k_channels_s16(raw_chunk)
+                )
+                if not channel_frames:
                     continue
 
-                is_speech = self.vad.is_speech(frame16, 16000)
+                vad_flags = []
+                rms_values = []
+                for channel_index, frame16 in enumerate(channel_frames):
+                    rms_dbfs = self.pcm16_rms_dbfs(frame16)
+                    rms_values.append(rms_dbfs)
+                    vad_flags.append(
+                        self.vads[channel_index].is_speech(frame16, 16000)
+                    )
+
+                item = (channel_frames, vad_flags, rms_values)
+                pre_roll.append(item)
+
+                # Ignore the ALSA/I2S startup transient and estimate the
+                # current room noise before allowing a speech trigger.
+                if calibration_count < calibration_frames:
+                    for channel_index in range(self.record_channels):
+                        noise_rms_by_channel[channel_index].append(
+                            rms_values[channel_index]
+                        )
+                    calibration_count += 1
+                    if calibration_count == calibration_frames:
+                        noise_floors = []
+                        for channel_index in range(self.record_channels):
+                            values = noise_rms_by_channel[channel_index]
+                            noise_floor = (
+                                float(np.percentile(values, 30))
+                                if values
+                                else -120.0
+                            )
+                            noise_floors.append(noise_floor)
+                            start_thresholds[channel_index] = max(
+                                self.start_energy_dbfs,
+                                noise_floor + self.start_snr_margin_db,
+                            )
+                            end_thresholds[channel_index] = max(
+                                self.start_energy_dbfs - 3.0,
+                                noise_floor + self.end_snr_margin_db,
+                            )
+                        self.publish_status(
+                            "ASR noise calibrated: floor="
+                            + ",".join(
+                                f"CH{index}:{value:.1f}"
+                                for index, value in enumerate(noise_floors)
+                            )
+                            + " dBFS, start="
+                            + ",".join(
+                                f"CH{index}:{value:.1f}"
+                                for index, value in enumerate(start_thresholds)
+                            )
+                            + " dBFS"
+                        )
+                        start_ring.clear()
+                        for ring in start_channel_rings:
+                            ring.clear()
+                    continue
+
+                start_flags = activity_flags(
+                    vad_flags, rms_values, start_thresholds
+                )
+                end_flags = activity_flags(
+                    vad_flags, rms_values, end_thresholds
+                )
+                start_speech = any(start_flags)
+                end_speech = any(end_flags)
 
                 if not triggered:
-                    pre_roll.append(frame16)
-                    start_ring.append(is_speech)
+                    start_ring.append(start_speech)
+                    for channel_index in range(self.record_channels):
+                        start_channel_rings[channel_index].append(
+                            start_flags[channel_index]
+                        )
                     waited_frames += 1
 
                     voiced_ratio = sum(start_ring) / len(start_ring)
 
-                    if len(start_ring) == start_window_frames and voiced_ratio >= self.start_trigger_ratio:
+                    if (
+                        len(start_ring) == start_window_frames
+                        and voiced_ratio >= self.start_trigger_ratio
+                    ):
                         triggered = True
-                        self.publish_status("ASR speech detected")
-                        collected_pcm16_frames.extend(list(pre_roll))
+                        reset_collection()
+                        for buffered_item in pre_roll:
+                            collect(buffered_item)
+
+                        confirmed_activity_frames = 0
+                        for buffered_item in pre_roll:
+                            _, buffered_vad, buffered_rms = buffered_item
+                            buffered_flags = activity_flags(
+                                buffered_vad,
+                                buffered_rms,
+                                start_thresholds,
+                            )
+                            if any(buffered_flags):
+                                confirmed_activity_frames += 1
+
+                        active_channels = [
+                            str(index)
+                            for index, ring in enumerate(start_channel_rings)
+                            if any(ring)
+                        ]
+                        self.publish_status(
+                            "ASR speech candidate: channels="
+                            + ",".join(active_channels)
+                        )
                         end_ring.clear()
                         frames_since_start = 0
                         continue
@@ -238,18 +464,56 @@ class AsrNode(Node):
                         return None
 
                 else:
-                    collected_pcm16_frames.append(frame16)
-                    end_ring.append(is_speech)
+                    collect(item)
+                    if start_speech:
+                        confirmed_activity_frames += 1
+                    end_ring.append(end_speech)
                     frames_since_start += 1
 
+                    if (
+                        confirmed_activity_frames == confirm_frames
+                    ):
+                        self.publish_status(
+                            "ASR speech detected: "
+                            f"active_frames={confirmed_activity_frames}"
+                        )
+
                     if frames_since_start >= max_utterance_frames:
-                        self.publish_status("ASR utterance stopped by max duration")
+                        if confirmed_activity_frames < confirm_frames:
+                            self.publish_status(
+                                "ASR false trigger rejected at max duration"
+                            )
+                            return None
+                        self.publish_status(
+                            "ASR utterance stopped by max duration"
+                        )
                         break
 
-                    if frames_since_start >= min_utterance_frames and len(end_ring) == end_window_frames:
-                        unvoiced_ratio = (len(end_ring) - sum(end_ring)) / len(end_ring)
+                    if (
+                        frames_since_start >= end_grace_frames
+                        and len(end_ring) == end_window_frames
+                    ):
+                        unvoiced_ratio = (
+                            len(end_ring) - sum(end_ring)
+                        ) / len(end_ring)
                         if unvoiced_ratio >= self.end_trigger_ratio:
-                            self.publish_status("ASR utterance stopped by silence")
+                            if confirmed_activity_frames < confirm_frames:
+                                self.publish_status(
+                                    "ASR false trigger rejected: "
+                                    f"active_frames={confirmed_activity_frames}"
+                                )
+                                triggered = False
+                                frames_since_start = 0
+                                confirmed_activity_frames = 0
+                                reset_collection()
+                                start_ring.clear()
+                                for ring in start_channel_rings:
+                                    ring.clear()
+                                end_ring.clear()
+                                continue
+                            self.publish_status(
+                                "ASR utterance stopped by silence"
+                            )
                             break
 
         finally:
@@ -265,10 +529,42 @@ class AsrNode(Node):
                 except Exception:
                     pass
 
-        if not triggered or not collected_pcm16_frames:
+        if not triggered:
+            return None
+        if confirmed_activity_frames < confirm_frames:
+            self.publish_status(
+                "ASR candidate rejected: insufficient confirmed speech"
+            )
             return None
 
-        wav_path = self.save_pcm16_frames_to_wav(collected_pcm16_frames)
+        selected_channel = self.select_best_channel(
+            voiced_counts,
+            voiced_rms_by_channel,
+            all_rms_by_channel,
+        )
+        selected_frames = collected_by_channel[selected_channel]
+        if not selected_frames:
+            return None
+
+        voiced_values = voiced_rms_by_channel[selected_channel]
+        voiced_mean = (
+            float(np.mean(voiced_values))
+            if voiced_values
+            else -120.0
+        )
+        p90 = (
+            float(np.percentile(all_rms_by_channel[selected_channel], 90))
+            if all_rms_by_channel[selected_channel]
+            else -120.0
+        )
+        self.publish_status(
+            f"ASR selected channel CH{selected_channel}: "
+            f"voiced_frames={voiced_counts[selected_channel]}, "
+            f"voiced_mean={voiced_mean:.1f} dBFS, "
+            f"p90={p90:.1f} dBFS"
+        )
+
+        wav_path = self.save_pcm16_frames_to_wav(selected_frames)
         self.publish_status(f"ASR recording finished: {wav_path}")
         return wav_path
 
@@ -281,24 +577,114 @@ class AsrNode(Node):
             data.extend(part)
         return bytes(data)
 
-    def raw48k_stereo_s32_to_16k_mono_s16(self, raw_chunk: bytes):
+    def raw48k_stereo_s32_to_16k_channels_s16(self, raw_chunk: bytes):
         try:
             data = np.frombuffer(raw_chunk, dtype=np.int32)
             if data.size == 0:
                 return None
 
             data = data.reshape(-1, self.record_channels)
-            mono32 = data.mean(axis=1)
 
-            # convert to int16 scale
-            mono16 = np.clip(mono32 / 65536.0, -32768, 32767).astype(np.int16)
+            # 48 kHz -> 16 kHz using a 3-sample boxcar before decimation.
+            # This is still lightweight, but avoids the worst aliasing of
+            # taking every third sample directly.
+            usable = (data.shape[0] // 3) * 3
+            if usable <= 0:
+                return None
+            reduced = data[:usable].reshape(
+                -1, 3, self.record_channels
+            ).mean(axis=1)
 
-            # 48k -> 16k simple decimation by 3
-            mono16_16k = mono16[::3]
+            base_gain = 10.0 ** (self.input_gain_db / 20.0)
+            limiter_linear = 10.0 ** (self.limiter_peak_dbfs / 20.0)
+            limiter_peak = 32767.0 * limiter_linear
 
-            return mono16_16k.tobytes()
-        except Exception:
+            result = []
+            for channel_index in range(self.record_channels):
+                samples = reduced[:, channel_index].astype(np.float64)
+
+                # Map S32 full scale to S16 full scale.
+                samples /= 65536.0
+
+                peak = float(np.max(np.abs(samples)))
+                applied_gain = base_gain
+                if peak > 0.0:
+                    applied_gain = min(
+                        base_gain,
+                        limiter_peak / peak,
+                    )
+
+                samples *= applied_gain
+                pcm16 = np.clip(
+                    np.rint(samples), -32768, 32767
+                ).astype(np.int16)
+                result.append(pcm16.tobytes())
+
+            return result
+        except Exception as exc:
+            self.get_logger().debug(f"audio conversion failed: {exc}")
             return None
+
+    @staticmethod
+    def pcm16_rms_dbfs(frame16: bytes) -> float:
+        samples = np.frombuffer(frame16, dtype=np.int16).astype(np.float64)
+        if samples.size == 0:
+            return -120.0
+        rms = math.sqrt(float(np.mean(samples * samples)))
+        if rms <= 0.0:
+            return -120.0
+        return 20.0 * math.log10(rms / 32767.0)
+
+    def select_best_channel(
+        self,
+        voiced_counts,
+        voiced_rms_by_channel,
+        all_rms_by_channel,
+    ) -> int:
+        if self.record_channels == 1:
+            return 0
+        if self.channel_strategy in {"left", "ch0", "0"}:
+            return 0
+        if self.channel_strategy in {"right", "ch1", "1"}:
+            return min(1, self.record_channels - 1)
+        if self.channel_strategy not in {"best_snr", "best_vad"}:
+            self.get_logger().warning(
+                f"Unknown channel_strategy={self.channel_strategy}; "
+                "using best_snr"
+            )
+
+        best_index = 0
+        best_score = None
+        for channel_index in range(self.record_channels):
+            all_values = all_rms_by_channel[channel_index]
+            voiced_values = voiced_rms_by_channel[channel_index]
+
+            noise_floor = (
+                float(np.percentile(all_values, 25))
+                if all_values
+                else -120.0
+            )
+            speech_level = (
+                float(np.percentile(voiced_values, 60))
+                if voiced_values
+                else -120.0
+            )
+            estimated_snr = speech_level - noise_floor
+            count = voiced_counts[channel_index]
+
+            # Prefer a channel with a sustained speech-like signal rather
+            # than a channel that merely contains a few loud impulses.
+            score = (
+                count >= max(1, self.speech_confirm_ms // self.frame_ms),
+                estimated_snr,
+                count,
+                speech_level,
+            )
+            if best_score is None or score > best_score:
+                best_score = score
+                best_index = channel_index
+
+        return best_index
 
     def save_pcm16_frames_to_wav(self, frames):
         with tempfile.NamedTemporaryFile(
