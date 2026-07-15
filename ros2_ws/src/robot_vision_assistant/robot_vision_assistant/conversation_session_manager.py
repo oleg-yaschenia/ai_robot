@@ -414,6 +414,27 @@ class ConversationSessionManager:
                     }
                 )
 
+        current_summary_raw = self.store.get_conversation_summary(
+            active_id
+        )
+        current_summary: Optional[Dict[str, Any]] = None
+        if current_summary_raw is not None:
+            try:
+                current_open_topics = json.loads(
+                    current_summary_raw.get("open_topics_json")
+                    or "[]"
+                )
+            except (TypeError, ValueError, json.JSONDecodeError):
+                current_open_topics = []
+            current_summary = {
+                "summary": current_summary_raw.get("summary") or "",
+                "open_topics": current_open_topics,
+                "covered_until_message_id": current_summary_raw.get(
+                    "covered_until_message_id"
+                ),
+                "updated_at": current_summary_raw.get("updated_at"),
+            }
+
         previous_context: Optional[Dict[str, Any]] = None
         if previous_conversation is not None:
             try:
@@ -449,6 +470,7 @@ class ConversationSessionManager:
             "participants": participants,
             "current_speaker": current_speaker,
             "recent_messages": recent_messages,
+            "current_conversation_summary": current_summary,
             "current_speaker_previous_conversation": previous_context,
             "current_speaker_facts": personal_facts,
         }

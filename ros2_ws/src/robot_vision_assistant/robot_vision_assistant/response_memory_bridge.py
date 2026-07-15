@@ -9,6 +9,9 @@ from robot_vision_assistant.conversation_session_manager import (
     ConversationSessionManager,
     SessionPolicy,
 )
+from robot_vision_assistant.conversation_summary_worker import (
+    ConversationSummaryWorker,
+)
 from robot_vision_assistant.deterministic_memory_worker import (
     DeterministicMemoryWorker,
 )
@@ -49,6 +52,9 @@ class ResponseMemoryBridge:
         max_context_chars: int = 4200,
         memory_worker_enabled: bool = False,
         memory_worker_queue_size: int = 128,
+        conversation_summary_enabled: bool = False,
+        conversation_summary_queue_size: int = 64,
+        conversation_summary_min_messages: int = 8,
         monotonic_clock: Callable[[], float] = time.monotonic,
     ) -> None:
         if not db_path.strip():
@@ -87,6 +93,15 @@ class ResponseMemoryBridge:
             self.memory_worker = DeterministicMemoryWorker(
                 self.store,
                 queue_size=memory_worker_queue_size,
+            )
+        self.conversation_summary_worker: Optional[
+            ConversationSummaryWorker
+        ] = None
+        if conversation_summary_enabled:
+            self.conversation_summary_worker = ConversationSummaryWorker(
+                self.store,
+                queue_size=conversation_summary_queue_size,
+                min_messages=conversation_summary_min_messages,
             )
         self._identity = SpeakerIdentity(
             entity_id=self.default_speaker_entity_id,
@@ -208,6 +223,8 @@ class ResponseMemoryBridge:
             reply_to_message_id=reply_to_message_id,
             metadata=metadata,
         )
+        if self.conversation_summary_worker is not None:
+            self.conversation_summary_worker.submit(conversation_id)
         return turn.message_id
 
     @staticmethod
@@ -293,6 +310,32 @@ class ResponseMemoryBridge:
                     }
                 )
 
+        current_summary_source = context.get(
+            "current_conversation_summary"
+        )
+        current_summary_compact: Optional[Dict[str, Any]] = None
+        if isinstance(current_summary_source, dict):
+            topics = current_summary_source.get("open_topics")
+            current_summary_compact = {
+                "summary": self._clean_text(
+                    current_summary_source.get("summary"),
+                    700,
+                ),
+                "open_topics": (
+                    [
+                        self._clean_text(topic, 180)
+                        for topic in topics[:4]
+                    ]
+                    if isinstance(topics, list)
+                    else []
+                ),
+                "covered_until_message_id": (
+                    current_summary_source.get(
+                        "covered_until_message_id"
+                    )
+                ),
+            }
+
         previous = context.get(
             "current_speaker_previous_conversation"
         )
@@ -336,6 +379,9 @@ class ResponseMemoryBridge:
             },
             "participants": participants,
             "recent_messages": messages,
+            "current_conversation_summary": (
+                current_summary_compact
+            ),
             "previous_conversation_with_current_speaker": (
                 previous_compact
             ),
@@ -361,6 +407,19 @@ class ResponseMemoryBridge:
             compact["current_speaker_facts"] = (
                 compact["current_speaker_facts"][:3]
             )
+
+        if serialized_length() > self.max_context_chars:
+            current_summary_value = compact[
+                "current_conversation_summary"
+            ]
+            if isinstance(current_summary_value, dict):
+                current_summary_value["summary"] = self._clean_text(
+                    current_summary_value.get("summary"),
+                    260,
+                )
+                current_summary_value["open_topics"] = (
+                    current_summary_value.get("open_topics") or []
+                )[:2]
 
         if serialized_length() > self.max_context_chars:
             previous_value = compact[
@@ -393,7 +452,24 @@ class ResponseMemoryBridge:
             return {}
         return self.memory_worker.stats()
 
+    def flush_conversation_summary_worker(
+        self,
+        timeout_sec: float = 5.0,
+    ) -> bool:
+        if self.conversation_summary_worker is None:
+            return True
+        return self.conversation_summary_worker.flush(
+            timeout_sec=timeout_sec
+        )
+
+    def conversation_summary_worker_stats(self) -> Dict[str, int]:
+        if self.conversation_summary_worker is None:
+            return {}
+        return self.conversation_summary_worker.stats()
+
     def close(self) -> None:
         if self.memory_worker is not None:
             self.memory_worker.close(flush=True)
+        if self.conversation_summary_worker is not None:
+            self.conversation_summary_worker.close(flush=True)
         self.store.close()

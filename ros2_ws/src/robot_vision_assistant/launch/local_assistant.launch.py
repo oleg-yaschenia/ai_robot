@@ -72,6 +72,9 @@ def generate_launch_description():
     response_memory_worker_enabled = LaunchConfiguration(
         "response_memory_worker_enabled"
     )
+    response_conversation_summary_enabled = LaunchConfiguration(
+        "response_conversation_summary_enabled"
+    )
     response_identity_topic = LaunchConfiguration(
         "response_identity_topic"
     )
@@ -383,6 +386,14 @@ def generate_launch_description():
             description=(
                 "Extract only explicit user-approved long-term facts "
                 "and corrections in a lightweight background worker."
+            ),
+        ),
+        DeclareLaunchArgument(
+            "response_conversation_summary_enabled",
+            default_value="false",
+            description=(
+                "Maintain deterministic extractive conversation "
+                "summaries and open topics in the background."
             ),
         ),
         DeclareLaunchArgument(
@@ -762,6 +773,14 @@ def generate_launch_description():
                     )
                 },
                 {"memory_worker_queue_size": 128},
+                {
+                    "conversation_summary_enabled": ParameterValue(
+                        response_conversation_summary_enabled,
+                        value_type=bool,
+                    )
+                },
+                {"conversation_summary_min_messages": 8},
+                {"conversation_summary_queue_size": 64},
             ],
         ),
 

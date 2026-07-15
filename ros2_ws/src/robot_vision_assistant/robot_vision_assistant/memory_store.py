@@ -715,6 +715,57 @@ class MemoryStore:
             self.conn.commit()
 
 
+    def get_conversation_summary(
+        self,
+        conversation_id: str,
+    ) -> Optional[Dict[str, Any]]:
+        with self._lock:
+            row = self.conn.execute(
+                """
+                SELECT *
+                FROM conversation_summaries
+                WHERE conversation_id=?
+                """,
+                (conversation_id,),
+            ).fetchone()
+            return self._row_to_dict(row)
+
+    def get_conversation_message_count(
+        self,
+        conversation_id: str,
+    ) -> int:
+        with self._lock:
+            row = self.conn.execute(
+                """
+                SELECT COUNT(*) AS count
+                FROM messages
+                WHERE conversation_id=?
+                """,
+                (conversation_id,),
+            ).fetchone()
+            return int(row["count"]) if row else 0
+
+    def get_messages_after(
+        self,
+        conversation_id: str,
+        *,
+        after_message_id: int = 0,
+        limit: int = 100,
+    ) -> List[Dict[str, Any]]:
+        safe_limit = max(1, min(int(limit), 500))
+        with self._lock:
+            rows = self.conn.execute(
+                """
+                SELECT *
+                FROM messages
+                WHERE conversation_id=? AND id>?
+                ORDER BY id ASC
+                LIMIT ?
+                """,
+                (conversation_id, int(after_message_id), safe_limit),
+            ).fetchall()
+            return [dict(row) for row in rows]
+
     def get_conversation(
         self,
         conversation_id: str,

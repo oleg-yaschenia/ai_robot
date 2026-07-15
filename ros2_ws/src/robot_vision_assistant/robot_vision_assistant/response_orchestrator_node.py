@@ -100,6 +100,18 @@ class ResponseOrchestratorNode(Node):
         self.declare_parameter("memory_worker_enabled", False)
         self.declare_parameter("memory_worker_queue_size", 128)
         self.declare_parameter(
+            "conversation_summary_enabled",
+            False,
+        )
+        self.declare_parameter(
+            "conversation_summary_min_messages",
+            8,
+        )
+        self.declare_parameter(
+            "conversation_summary_queue_size",
+            64,
+        )
+        self.declare_parameter(
             "default_speaker_entity_id",
             "person:unknown",
         )
@@ -200,6 +212,21 @@ class ResponseOrchestratorNode(Node):
                 memory_worker_queue_size=int(
                     self.get_parameter(
                         "memory_worker_queue_size"
+                    ).value
+                ),
+                conversation_summary_enabled=bool(
+                    self.get_parameter(
+                        "conversation_summary_enabled"
+                    ).value
+                ),
+                conversation_summary_min_messages=int(
+                    self.get_parameter(
+                        "conversation_summary_min_messages"
+                    ).value
+                ),
+                conversation_summary_queue_size=int(
+                    self.get_parameter(
+                        "conversation_summary_queue_size"
                     ).value
                 ),
             )
