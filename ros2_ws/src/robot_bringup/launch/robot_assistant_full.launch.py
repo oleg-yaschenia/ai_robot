@@ -43,6 +43,15 @@ def generate_launch_description():
     legacy_record_interactions = LaunchConfiguration(
         "legacy_record_interactions"
     )
+    response_memory_enabled = LaunchConfiguration(
+        "response_memory_enabled"
+    )
+    response_memory_worker_enabled = LaunchConfiguration(
+        "response_memory_worker_enabled"
+    )
+    response_conversation_summary_enabled = LaunchConfiguration(
+        "response_conversation_summary_enabled"
+    )
     tts_enabled = LaunchConfiguration("tts_enabled")
     asr_channel_strategy = LaunchConfiguration("asr_channel_strategy")
     asr_input_gain_db = LaunchConfiguration("asr_input_gain_db")
@@ -109,6 +118,11 @@ def generate_launch_description():
             "response_qwen_timeout_sec": response_qwen_timeout_sec,
             "response_legacy_timeout_sec": response_legacy_timeout_sec,
             "legacy_record_interactions": legacy_record_interactions,
+            "response_memory_enabled": response_memory_enabled,
+            "response_memory_worker_enabled": response_memory_worker_enabled,
+            "response_conversation_summary_enabled": (
+                response_conversation_summary_enabled
+            ),
             "tts_enabled": tts_enabled,
             "asr_channel_strategy": asr_channel_strategy,
             "asr_input_gain_db": asr_input_gain_db,
@@ -276,6 +290,30 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "legacy_record_interactions",
             default_value="true",
+        ),
+        DeclareLaunchArgument(
+            "response_memory_enabled",
+            default_value="true",
+            description=(
+                "Enable provider-neutral local dialogue memory when "
+                "Response Orchestrator is enabled."
+            ),
+        ),
+        DeclareLaunchArgument(
+            "response_memory_worker_enabled",
+            default_value="true",
+            description=(
+                "Enable deterministic explicit-fact/correction extraction "
+                "when Response Orchestrator memory is enabled."
+            ),
+        ),
+        DeclareLaunchArgument(
+            "response_conversation_summary_enabled",
+            default_value="true",
+            description=(
+                "Enable deterministic conversation summaries and open topics "
+                "when Response Orchestrator memory is enabled."
+            ),
         ),
         DeclareLaunchArgument(
             "tts_enabled",
