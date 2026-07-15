@@ -44,7 +44,7 @@ def test_schema_upgrade_preserves_legacy_tables(tmp_path):
             WHERE key='schema_version'
             """
         ).fetchone()
-        assert version["value"] == "2"
+        assert version["value"] == "3"
     finally:
         store.close()
 
@@ -238,5 +238,61 @@ def test_legacy_add_interaction_still_works(tmp_path):
         assert row["mode"] == "local_only"
         assert row["question"] == "Что ты видишь?"
         assert row["answer"] == "Я вижу человека."
+    finally:
+        store.close()
+
+
+def test_schema_v3_adds_dedupe_key_and_deduplicates(tmp_path):
+    store = MemoryStore(str(tmp_path / "memory.sqlite"))
+    try:
+        columns = {
+            row["name"]
+            for row in store.conn.execute(
+                "PRAGMA table_info(memory_facts)"
+            ).fetchall()
+        }
+        assert "dedupe_key" in columns
+
+        store.upsert_entity(
+            "person:oleg",
+            "person",
+            name="Олег",
+        )
+        first_id, first_created = (
+            store.upsert_memory_fact_deduplicated(
+                subject_entity_id="person:oleg",
+                predicate="explicit_memory",
+                value={"statement": "Я люблю синий цвет"},
+                dedupe_key="explicit_fact:я люблю синий цвет",
+                fact_type="explicit_fact",
+                confidence=1.0,
+                importance=0.9,
+                source_type="explicit_user_statement",
+                privacy_scope="person_private",
+                confirmed_by_user=True,
+            )
+        )
+        second_id, second_created = (
+            store.upsert_memory_fact_deduplicated(
+                subject_entity_id="person:oleg",
+                predicate="explicit_memory",
+                value={"statement": "Я люблю синий цвет"},
+                dedupe_key="explicit_fact:я люблю синий цвет",
+                fact_type="explicit_fact",
+                confidence=1.0,
+                importance=0.9,
+                source_type="explicit_user_statement",
+                privacy_scope="person_private",
+                confirmed_by_user=True,
+            )
+        )
+
+        assert first_created is True
+        assert second_created is False
+        assert second_id == first_id
+        count = store.conn.execute(
+            "SELECT COUNT(*) AS count FROM memory_facts"
+        ).fetchone()["count"]
+        assert count == 1
     finally:
         store.close()

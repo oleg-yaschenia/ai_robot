@@ -97,6 +97,8 @@ class ResponseOrchestratorNode(Node):
         self.declare_parameter("memory_recent_messages", 8)
         self.declare_parameter("memory_personal_facts", 4)
         self.declare_parameter("memory_max_context_chars", 2400)
+        self.declare_parameter("memory_worker_enabled", False)
+        self.declare_parameter("memory_worker_queue_size", 128)
         self.declare_parameter(
             "default_speaker_entity_id",
             "person:unknown",
@@ -190,6 +192,16 @@ class ResponseOrchestratorNode(Node):
                         "memory_max_context_chars"
                     ).value
                 ),
+                memory_worker_enabled=bool(
+                    self.get_parameter(
+                        "memory_worker_enabled"
+                    ).value
+                ),
+                memory_worker_queue_size=int(
+                    self.get_parameter(
+                        "memory_worker_queue_size"
+                    ).value
+                ),
             )
 
         try:
@@ -248,6 +260,10 @@ class ResponseOrchestratorNode(Node):
                 "legacy_query_topic": self.legacy_query_topic,
                 "execution_allowed": False,
                 "memory_enabled": self.memory_enabled,
+                "memory_worker_enabled": bool(
+                    self.memory_bridge is not None
+                    and self.memory_bridge.memory_worker is not None
+                ),
             },
         )
         self.get_logger().info(

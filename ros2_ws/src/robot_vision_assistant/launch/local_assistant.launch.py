@@ -69,6 +69,9 @@ def generate_launch_description():
     response_memory_enabled = LaunchConfiguration(
         "response_memory_enabled"
     )
+    response_memory_worker_enabled = LaunchConfiguration(
+        "response_memory_worker_enabled"
+    )
     response_identity_topic = LaunchConfiguration(
         "response_identity_topic"
     )
@@ -372,6 +375,14 @@ def generate_launch_description():
             description=(
                 "Persist orchestrated dialogue locally and inject "
                 "bounded shared/person-aware memory context."
+            ),
+        ),
+        DeclareLaunchArgument(
+            "response_memory_worker_enabled",
+            default_value="false",
+            description=(
+                "Extract only explicit user-approved long-term facts "
+                "and corrections in a lightweight background worker."
             ),
         ),
         DeclareLaunchArgument(
@@ -744,6 +755,13 @@ def generate_launch_description():
                 {"memory_recent_messages": 8},
                 {"memory_personal_facts": 4},
                 {"memory_max_context_chars": 2400},
+                {
+                    "memory_worker_enabled": ParameterValue(
+                        response_memory_worker_enabled,
+                        value_type=bool,
+                    )
+                },
+                {"memory_worker_queue_size": 128},
             ],
         ),
 

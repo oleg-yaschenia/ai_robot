@@ -9,6 +9,9 @@ from robot_vision_assistant.conversation_session_manager import (
     ConversationSessionManager,
     SessionPolicy,
 )
+from robot_vision_assistant.deterministic_memory_worker import (
+    DeterministicMemoryWorker,
+)
 from robot_vision_assistant.memory_store import MemoryStore
 
 
@@ -44,6 +47,8 @@ class ResponseMemoryBridge:
         recent_message_limit: int = 10,
         personal_fact_limit: int = 6,
         max_context_chars: int = 4200,
+        memory_worker_enabled: bool = False,
+        memory_worker_queue_size: int = 128,
         monotonic_clock: Callable[[], float] = time.monotonic,
     ) -> None:
         if not db_path.strip():
@@ -75,6 +80,14 @@ class ResponseMemoryBridge:
             ),
             monotonic_clock=monotonic_clock,
         )
+        self.memory_worker: Optional[
+            DeterministicMemoryWorker
+        ] = None
+        if memory_worker_enabled:
+            self.memory_worker = DeterministicMemoryWorker(
+                self.store,
+                queue_size=memory_worker_queue_size,
+            )
         self._identity = SpeakerIdentity(
             entity_id=self.default_speaker_entity_id,
             name="Неизвестный собеседник",
@@ -162,6 +175,14 @@ class ResponseMemoryBridge:
             current_speaker_entity_id=identity.entity_id,
             conversation_id=turn.conversation_id,
         )
+        if self.memory_worker is not None:
+            self.memory_worker.submit(
+                conversation_id=turn.conversation_id,
+                message_id=turn.message_id,
+                speaker_entity_id=identity.entity_id,
+                identity_status=identity.status,
+                text=query,
+            )
         return MemoryRequestRecord(
             conversation_id=turn.conversation_id,
             user_message_id=turn.message_id,
@@ -359,5 +380,20 @@ class ResponseMemoryBridge:
 
         return compact
 
+    def flush_memory_worker(
+        self,
+        timeout_sec: float = 5.0,
+    ) -> bool:
+        if self.memory_worker is None:
+            return True
+        return self.memory_worker.flush(timeout_sec=timeout_sec)
+
+    def memory_worker_stats(self) -> Dict[str, int]:
+        if self.memory_worker is None:
+            return {}
+        return self.memory_worker.stats()
+
     def close(self) -> None:
+        if self.memory_worker is not None:
+            self.memory_worker.close(flush=True)
         self.store.close()

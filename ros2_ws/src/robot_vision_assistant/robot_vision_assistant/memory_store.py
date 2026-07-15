@@ -11,11 +11,11 @@ from typing import Any, Dict, List, Optional
 class MemoryStore:
     """Local source of truth for robot conversations and long-term memory.
 
-    The v2 schema is additive: legacy tables remain untouched so existing
+    The v3 schema is additive: legacy tables remain untouched so existing
     interaction and scene-event data are preserved.
     """
 
-    SCHEMA_VERSION = 2
+    SCHEMA_VERSION = 3
 
     def __init__(self, db_path: str):
         self.db_path = Path(db_path)
@@ -184,6 +184,7 @@ class MemoryStore:
                     subject_entity_id TEXT,
                     predicate TEXT NOT NULL,
                     value_json TEXT NOT NULL,
+                    dedupe_key TEXT NOT NULL DEFAULT '',
                     fact_type TEXT NOT NULL DEFAULT 'general',
                     confidence REAL NOT NULL DEFAULT 1.0,
                     importance REAL NOT NULL DEFAULT 0.5,
@@ -206,6 +207,20 @@ class MemoryStore:
                 )
                 """
             )
+            memory_fact_columns = {
+                str(row["name"])
+                for row in cur.execute(
+                    "PRAGMA table_info(memory_facts)"
+                ).fetchall()
+            }
+            if "dedupe_key" not in memory_fact_columns:
+                cur.execute(
+                    """
+                    ALTER TABLE memory_facts
+                    ADD COLUMN dedupe_key TEXT NOT NULL DEFAULT ''
+                    """
+                )
+
             cur.execute(
                 """
                 CREATE TABLE IF NOT EXISTS memory_events (
@@ -272,6 +287,18 @@ class MemoryStore:
                 """
                 CREATE INDEX IF NOT EXISTS idx_memory_facts_source
                 ON memory_facts(source_message_id)
+                """
+            )
+            cur.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_memory_facts_dedupe
+                ON memory_facts(
+                    subject_entity_id,
+                    fact_type,
+                    predicate,
+                    dedupe_key,
+                    active
+                )
                 """
             )
 
@@ -795,6 +822,7 @@ class MemoryStore:
         predicate: str,
         value: Any,
         subject_entity_id: Optional[str] = None,
+        dedupe_key: str = "",
         fact_type: str = "general",
         confidence: float = 1.0,
         importance: float = 0.5,
@@ -810,6 +838,7 @@ class MemoryStore:
                     subject_entity_id,
                     predicate,
                     value_json,
+                    dedupe_key,
                     fact_type,
                     confidence,
                     importance,
@@ -818,12 +847,13 @@ class MemoryStore:
                     privacy_scope,
                     confirmed_by_user
                 )
-                VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     subject_entity_id,
                     predicate,
                     self._json_dumps(value),
+                    dedupe_key.strip(),
                     fact_type,
                     max(0.0, min(float(confidence), 1.0)),
                     max(0.0, min(float(importance), 1.0)),
@@ -835,6 +865,116 @@ class MemoryStore:
             )
             self.conn.commit()
             return int(cur.lastrowid)
+
+    def upsert_memory_fact_deduplicated(
+        self,
+        *,
+        predicate: str,
+        value: Any,
+        dedupe_key: str,
+        subject_entity_id: Optional[str] = None,
+        fact_type: str = "general",
+        confidence: float = 1.0,
+        importance: float = 0.5,
+        source_type: str = "conversation",
+        source_message_id: Optional[int] = None,
+        privacy_scope: str = "public_household",
+        confirmed_by_user: bool = False,
+    ) -> tuple[int, bool]:
+        normalized_key = dedupe_key.strip()
+        if not normalized_key:
+            raise ValueError("dedupe_key must not be empty")
+
+        confidence_value = max(
+            0.0,
+            min(float(confidence), 1.0),
+        )
+        importance_value = max(
+            0.0,
+            min(float(importance), 1.0),
+        )
+        confirmed_value = 1 if confirmed_by_user else 0
+
+        with self._lock:
+            row = self.conn.execute(
+                """
+                SELECT id
+                FROM memory_facts
+                WHERE
+                    active=1
+                    AND subject_entity_id IS ?
+                    AND predicate=?
+                    AND fact_type=?
+                    AND dedupe_key=?
+                ORDER BY id ASC
+                LIMIT 1
+                """,
+                (
+                    subject_entity_id,
+                    predicate,
+                    fact_type,
+                    normalized_key,
+                ),
+            ).fetchone()
+
+            if row is not None:
+                fact_id = int(row["id"])
+                self.conn.execute(
+                    """
+                    UPDATE memory_facts
+                    SET
+                        confidence=MAX(confidence, ?),
+                        importance=MAX(importance, ?),
+                        confirmed_by_user=MAX(
+                            confirmed_by_user,
+                            ?
+                        ),
+                        updated_at=CURRENT_TIMESTAMP
+                    WHERE id=?
+                    """,
+                    (
+                        confidence_value,
+                        importance_value,
+                        confirmed_value,
+                        fact_id,
+                    ),
+                )
+                self.conn.commit()
+                return fact_id, False
+
+            cur = self.conn.execute(
+                """
+                INSERT INTO memory_facts(
+                    subject_entity_id,
+                    predicate,
+                    value_json,
+                    dedupe_key,
+                    fact_type,
+                    confidence,
+                    importance,
+                    source_type,
+                    source_message_id,
+                    privacy_scope,
+                    confirmed_by_user
+                )
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    subject_entity_id,
+                    predicate,
+                    self._json_dumps(value),
+                    normalized_key,
+                    fact_type,
+                    confidence_value,
+                    importance_value,
+                    source_type,
+                    source_message_id,
+                    privacy_scope,
+                    confirmed_value,
+                ),
+            )
+            self.conn.commit()
+            return int(cur.lastrowid), True
 
     def get_active_facts(
         self,
