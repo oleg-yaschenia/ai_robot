@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
@@ -11,7 +13,15 @@ def generate_launch_description():
             str(Path.home() / "ai_robot"),
         )
     ).expanduser()
+    default_whisper_cli = str(project_root / "tools" / "whisper.cpp" / "build" / "bin" / "whisper-cli")
+    default_model_path = str(project_root / "tools" / "whisper.cpp" / "models" / "ggml-base.bin")
+
     return LaunchDescription([
+        DeclareLaunchArgument("whisper_cli", default_value=default_whisper_cli),
+        DeclareLaunchArgument("model_path", default_value=default_model_path),
+        DeclareLaunchArgument("start_energy_dbfs", default_value="-47.0"),
+        DeclareLaunchArgument("start_snr_margin_db", default_value="4.0"),
+        DeclareLaunchArgument("speech_confirm_ms", default_value="240"),
         Node(
             package="robot_vision_assistant",
             executable="asr_node",
@@ -28,8 +38,8 @@ def generate_launch_description():
                 {"record_channels": 2},
                 {"record_format": "S32_LE"},
 
-                {"whisper_cli": str(project_root / "tools" / "whisper.cpp" / "build" / "bin" / "whisper-cli")},
-                {"model_path": str(project_root / "tools" / "whisper.cpp" / "models" / "ggml-base.bin")},
+                {"whisper_cli": LaunchConfiguration("whisper_cli")},
+                {"model_path": LaunchConfiguration("model_path")},
                 {"language": "ru"},
                 {"threads": 4},
                 {"processors": 1},
@@ -38,7 +48,7 @@ def generate_launch_description():
                 {"channel_strategy": "best_snr"},
                 {"input_gain_db": 18.0},
                 {"limiter_peak_dbfs": -6.0},
-                {"start_energy_dbfs": -47.0},
+                {"start_energy_dbfs": LaunchConfiguration("start_energy_dbfs")},
                 {"vad_mode": 0},
                 {"frame_ms": 30},
                 {"pre_roll_ms": 900},
@@ -50,9 +60,9 @@ def generate_launch_description():
                 {"end_trigger_ratio": 0.85},
                 {"min_utterance_ms": 500},
                 {"noise_calibration_ms": 600},
-                {"start_snr_margin_db": 4.0},
+                {"start_snr_margin_db": LaunchConfiguration("start_snr_margin_db")},
                 {"end_snr_margin_db": 2.0},
-                {"speech_confirm_ms": 240},
+                {"speech_confirm_ms": LaunchConfiguration("speech_confirm_ms")},
                 {"end_grace_ms": 1200},
                 {"debug_keep_wav": False},
             ],
